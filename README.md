@@ -12,6 +12,27 @@ Loading images via JavaScript module `import` is also supported, although not re
 
 ## Available Commands
 
+_Monolith:_
+  _Before Doing the Things Below!_
+  
+  It may help to run the following command in your terminal before installing the node packages.
+
+  What you will need to do, is, install the latest version of NodeJS. The link for that is located above in the "Requirements" section. It should currently be version 20.5.0.
+
+  Then, you will need to open the repository in your IDE. Ideally, the IDE you use is VSCode, but, of course, there are other IDE's as well.
+
+  Then, open a terminal within the IDE (while the repository/folder is open), or simply open the project folder in a separate terminal, it is essentially the same. 
+
+  Then, type in the following command into the terminal:
+  
+      `export NODE_OPTIONS=--openssl-legacy-provider`
+
+      This command will fix a LOT of issues that node packages may cause you when running the new additions I have made.
+
+  Then, you can continue to do the commands below, and you should have no issues when you do the `npm start` command, which, starts the live dev server through webpack, and opens a browser tab to interact with your game and test things.
+
+  If there are any issues you have, let me know!
+
 | Command | Description |
 |---------|-------------|
 | `npm install` | Install project dependencies |
