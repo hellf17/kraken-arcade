@@ -19,6 +19,9 @@ class MyGame extends Phaser.Scene
         //this.loadTilemaps()
 
         this.loadImages();
+        this.loadSpritesheets();
+        this.createAnims();
+        this.loadAudio();
 
     }
 
@@ -69,14 +72,40 @@ class MyGame extends Phaser.Scene
     //Here we create the animations from spritesheets that we loaded in the loadSpritesheets() function.
     createAnims(){
 
-        
+        //The below code is from the Phaser 3 documentation, and is an example of how to create an animation from a spritesheet.
+        this.anims.create({
+            key: 'player1-idle',
+            frames: this.anims.generateFrameNumbers('player1'),
+            frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'player2-idle',
+            frames: this.anims.generateFrameNumbers('player2'),
+            frameRate: 5,
+            repeat: -1
+        })
+
+        //We will need to make animations for enemies, buffs, and everything else.
+        //We can do this later. It is not vital for functionality.
+
+
+
+    }
+
+    addBackground(){
+
+        const background = this.add.image(400, 300, 'background-space-desert');
+        background.setScale(1.5);
 
     }
       
     create ()
     {
-        const logo = this.add.image(400, 150, 'logo');
+        //const logo = this.add.image(400, 150, 'logo');
       
+        /*
         this.tweens.add({
             targets: logo,
             y: 450,
@@ -85,6 +114,11 @@ class MyGame extends Phaser.Scene
             yoyo: true,
             loop: -1
         });
+        */
+        this.addBackground();
+
+        //Add the player to the game
+        this.player = this.physics.add.sprite(100, 450, 'player1');
     }
 }
 
