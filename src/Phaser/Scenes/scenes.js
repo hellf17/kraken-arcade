@@ -1,7 +1,7 @@
-import BootScene from './BootScene';
-import TitleScene from './TitleScene';
-import GameScene from './GameScene';
-import UiScene from './UiScene';
+import BootScene from './BootScene.js';
+import TitleScene from './TitleScene.js';
+import GameScene from './GameScene.js';
+import UiScene from './UiScene.js';
 
 export default [
   BootScene,
