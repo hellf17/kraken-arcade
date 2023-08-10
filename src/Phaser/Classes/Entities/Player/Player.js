@@ -6,8 +6,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     //Initialize the player's stats and any associated variables
 
     constructor(scene, x, y, texture, frame) {
-        this.xp = 0;
-        this.timeSurvived = 0
         super(scene, x, y, texture, frame);
         this.scene = scene;
         this.scene.add.existing(this);
@@ -23,6 +21,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isHit = false
         this.isAttacking = false
 
+        this.xp = 0;
+        this.timeSurvived = 0
         /*
         this.moveState = createMachine({})
         this.animState = createMachine({})

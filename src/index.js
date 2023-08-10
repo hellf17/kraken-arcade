@@ -54,24 +54,29 @@ class MyGame extends Phaser.Scene
         //Add the player's XP bar
         //Add the player's time survived
 
-        this.add.text(10, 10, 'Health: ' + this.player.hitPoints, { font: '16px Courier', fill: '#00ff00' });
+        
+    }
+
+    timerUI(){
+
+        this.add.rectangle(10, 70, 100, 20, 0x00ff00).setOrigin(0, 0);
+
+        this.add.text(10, 90, 'Time Survived: ' + this.player.timeSurvived, { font: '16px Courier', fill: '#00ff00' });
+
+    }
+
+    xpUI(){
 
         this.add.rectangle(10, 30, 100, 20, 0x00ff00).setOrigin(0, 0);
 
         this.add.text(10, 50, 'XP: ' + this.player.xp, { font: '16px Courier', fill: '#00ff00' });
 
-        this.add.rectangle(10, 70, 100, 20, 0x00ff00).setOrigin(0, 0);
-
-        this.add.text(10, 90, 'Time Survived: ' + this.player.timeSurvived, { font: '16px Courier', fill: '#00ff00' });
     }
 
-    timeSurvived(){
-            
-            this.player.timeSurvived += 1;
+    healthUI(){
 
-            //The time survived should be measured in seconds
+        this.add.text(10, 10, 'Health: ' + this.player.hitPoints, { font: '16px Courier', fill: '#00ff00' });
 
-            //Every 10 seconds, the player should gain 1 XP
     }
 
     preload ()
