@@ -9,7 +9,7 @@ The player plays as the pseudo-kraken, owned by @hellf17 , and later, any of the
 
 *Mechanics*
 
-This is an arcade-style shooter game with the following mechanics:
+    This is an arcade-style shooter game with the following mechanics:
     +a timer to record how long the player survives
     +enemies that attack the player
     +XP that the player earns, in direct proportion with the time they have survived
