@@ -5,22 +5,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     //Initialize the player's stats and any associated variables
 
-   hitPoints = 100
-   isAlive = true
-   isHit = false
-   isAttacking = false
-
-   moveState = createMachine({})
-   animState = createMachine({})
-
-    constructor(scene, x, y, texture) {
-        super(scene, x, y, 'player1', 0);
+    constructor(scene, x, y, texture, frame) {
+        super(scene, x, y, texture, frame);
         this.scene = scene;
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
-        this.scene.physics.world.enable(this);
+        //this.scene.physics.world.enable(this);
         this.setDragX(1000);
         this.setDepth(2);
+
+        this.hitPoints = 100
+        this.isAlive = true
+        this.isHit = false
+        this.isAttacking = false
+
+        /*
+        this.moveState = createMachine({})
+        this.animState = createMachine({})
+        */
 
         this.setOrigin(0.5, 1);
         this.setCollideWorldBounds(true);
@@ -30,8 +32,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setMaxVelocity(300, 300);
 
         this.setupKeys();
+        /*
         this.setupAnimations();
         this.setupMovemement();
+        */
     }
 
     //Set up the player controls for the user to make actions within the game
@@ -58,6 +62,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 
         this.setVelocityY(-300);
+    }
+
+    update(){
+        
     }
 
 }
