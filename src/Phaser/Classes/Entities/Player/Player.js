@@ -14,6 +14,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setDragX(1000);
         this.setDepth(2);
 
+        this.anims.play('player-idle', true);
+
         this.hitPoints = 100
         this.isAlive = true
         this.isHit = false
@@ -51,6 +53,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.input = {};
         this.input.didPressJump = Phaser.Input.Keyboard.JustDown(this.keys.up);
         this.keyboard = this.scene.input.keyboard;
+    }
+
+    //Set up the attack method for the player
+    attack() {
+        
     }
 
     kill(){

@@ -48,7 +48,6 @@ class MyGame extends Phaser.Scene
 
         this.loadImages();
         this.loadSpritesheets();
-        this.createAnims();
         this.loadAudio();
 
     }
@@ -124,7 +123,7 @@ class MyGame extends Phaser.Scene
         //Load all the spritesheets in the spritesheets folder
 
         //Player spritesheet
-        this.load.spritesheet('player1-idle', kraken1IdleSheet,
+        this.load.spritesheet('player-idle', kraken1IdleSheet,
         {
             frameWidth: 183,
             frameHeight: 183
@@ -161,9 +160,18 @@ class MyGame extends Phaser.Scene
         //The below code is from the Phaser 3 documentation, and is an example of how to create an animation from a spritesheet.
         this.anims.create({
             key: "player-idle",
-            frames: this.anims.generateFrameNumbers('player1-idle'),
-            frameRate: 5,
+            frames: this.anims.generateFrameNumbers('player-idle'),
+            frameRate: 12,
             repeat: -1
+        });
+
+        this.tweens.add({
+            targets: this.player,
+            y: 450,
+            duration: 2000,
+            ease: "Power2",
+            yoyo: true,
+            loop: -1
         });
 
         /*
@@ -208,7 +216,7 @@ class MyGame extends Phaser.Scene
         this.createAnims();
 
         //Add the player to the game
-        this.player = new Player(this, 400, 300, 'player1-idle');
+        this.player = new Player(this, 400, 300, 'player-idle');
     }
 }
 
