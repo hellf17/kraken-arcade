@@ -54,15 +54,23 @@ class MyGame extends Phaser.Scene
         this.load.audio('projectile-sound-1', 'assets/audio/projectile.mp3');
     }
 
+    //A spritesheet is a .png file that contains all the frames of an animation.
+    //We will need to create spritesheets for the player, enemies, projectiles, and everything else that has an animation.
+    //There are other ways to have animations, but spritesheets are generally what we use.
+    //There is code that we have in the pseudo-kraken game that loads spritesheets, from metadata that is pulled from the NFT smart contracts for pseudo-krakens.
+    //I will have to review how we did that, and then implement it here, if we want the player to use their own kraken(s) as their in-game character for the arcade-kraken shooter.
     loadSpritesheets(){
+        
+        //Player spritesheet
+        this.load.spritesheet('player1', 'assets/images/spritesheets/kraken-player/kraken1-idle-sheet.png', { frameWidth: 145, frameHeight: 145 });
+        this.load.spritesheet('player2', 'assets/images/spritesheets/kraken-player/kraken2-idle-sheet.png', { frameWidth: 145, frameHeight: 145 });
+    }
 
-        //Currently, we do not have any spritesheets.
-        //A spritesheet is a .png file that contains all the frames of an animation.
-        //We will need to create spritesheets for the player, enemies, projectiles, and everything else that has an animation.
-        //There are other ways to have animations, but spritesheets are generally what we use.
+    //Here we create the animations from spritesheets that we loaded in the loadSpritesheets() function.
+    createAnims(){
 
-        //There is code that we have in the pseudo-kraken game that loads spritesheets, from metadata that is pulled from the NFT smart contracts for pseudo-krakens.
-        //I will have to review how we did that, and then implement it here, if we want the player to use their own kraken(s) as their in-game character for the arcade-kraken shooter.
+        
+
     }
       
     create ()
