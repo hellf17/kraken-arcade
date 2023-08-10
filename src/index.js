@@ -36,6 +36,44 @@ class MyGame extends Phaser.Scene
         super("MyGame");
     }
 
+    setCameras(){
+            
+            //Set the camera to follow the player
+            this.cameras.main.startFollow(this.player);
+            this.cameras.main.setDeadzone(100, 100);
+
+            let centerWidth = this.sys.game.config.width / 2
+            let centerHeight = this.sys.game.config.height / 2
+    }
+
+    drawUI(){
+
+        this.add.rectangle(centerWidth, centerHeight, this.sys.game.config.width, this.sys.game.config.height, 0xff0000).setAlpha(0.1);
+
+        //Add the player's health bar
+        //Add the player's XP bar
+        //Add the player's time survived
+
+        this.add.text(10, 10, 'Health: ' + this.player.hitPoints, { font: '16px Courier', fill: '#00ff00' });
+
+        this.add.rectangle(10, 30, 100, 20, 0x00ff00).setOrigin(0, 0);
+
+        this.add.text(10, 50, 'XP: ' + this.player.xp, { font: '16px Courier', fill: '#00ff00' });
+
+        this.add.rectangle(10, 70, 100, 20, 0x00ff00).setOrigin(0, 0);
+
+        this.add.text(10, 90, 'Time Survived: ' + this.player.timeSurvived, { font: '16px Courier', fill: '#00ff00' });
+    }
+
+    timeSurvived(){
+            
+            this.player.timeSurvived += 1;
+
+            //The time survived should be measured in seconds
+
+            //Every 10 seconds, the player should gain 1 XP
+    }
+
     preload ()
     {
 
@@ -217,6 +255,19 @@ class MyGame extends Phaser.Scene
 
         //Add the player to the game
         this.player = new Player(this, 400, 300, 'player-idle');
+    }
+
+    update(){
+
+    }
+
+    //Add the function to load the end screen if the player dies
+
+    endScene(){
+
+        //Load the end scene
+        this.scene.start('EndScene')
+
     }
 }
 

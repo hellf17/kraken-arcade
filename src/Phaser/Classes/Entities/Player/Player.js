@@ -6,6 +6,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     //Initialize the player's stats and any associated variables
 
     constructor(scene, x, y, texture, frame) {
+        this.xp = 0;
+        this.timeSurvived = 0
         super(scene, x, y, texture, frame);
         this.scene = scene;
         this.scene.add.existing(this);
@@ -40,6 +42,23 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         */
     }
 
+    //Add the function for incrementing the player's XP and time survived
+    /*
+    timeSurvived(){
+
+         //Check if the player is not dead
+        //If the player isAlive is true, then add to the timeSurvived
+        //If the player is dead, then stop adding to the timeSurvived
+
+        //This function should only check every second, so we will need to add a timer to it.
+
+        //Check the player's alive status, and update every second
+        this.player.timeSurvived += 1;
+        //The time survived should be measured in seconds
+        //Every 10 seconds, the player should gain 1 XP
+    }
+    */
+
     //Set up the player controls for the user to make actions within the game
     setupKeys() {
 
@@ -72,6 +91,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update(){
+
+        this.timeSurvived += 1;
         
     }
 
