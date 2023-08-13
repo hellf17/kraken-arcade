@@ -12,7 +12,7 @@ export default class TitleScene extends Phaser.Scene {
     this.titleText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Kraken Onslaught', {font:'Times New Roman', fontSize: '128px', fill: '#fff' });
     this.titleText.setOrigin(0.5);
 
-    
+    /*
     this.startButton = new UiButton(
       this,
       this.scale.width / 2,
@@ -21,6 +21,7 @@ export default class TitleScene extends Phaser.Scene {
       'button2',
       this.startScene.bind(this, 'Game'),
     );
+    */
 
     // handle game resize
     this.scale.on('resize', this.resize, this);
