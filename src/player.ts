@@ -1,12 +1,13 @@
 //Create player
 export const createPlayer = (scene: Phaser.Scene, screenX, screenY) => {
     const player = scene.physics.add.sprite(screenX, screenY, 'player')
+    player.setScale(1.5)
     createAnimations(scene)
     return player;
 }
 
 //Load player spritesheet
-export const loadSprites = (scene: Phaser.Scene): void => {
+export const loadPlayer = (scene: Phaser.Scene): void => {
     scene.load.spritesheet('player', 'assets/images/spritesheets/kraken-player/kraken1-idle-sheet.png',
     { frameWidth: 150, frameHeight: 150, spacing: 33})    
 }
@@ -21,3 +22,4 @@ export const createAnimations = (scene: Phaser.Scene): void => {
         yoyo: true
     })    
 }
+
