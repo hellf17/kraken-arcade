@@ -2,13 +2,12 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
-import typescript from '@rollup/plugin-typescript';
 
 export default {
 
     //  Our games entry point (edit as required)
     input: [
-        './src/game.ts'
+        './src/game.js'
     ],
 
     //  Where the build file is to be generated.
@@ -38,7 +37,7 @@ export default {
 
         //  Parse our .ts source files
         nodeResolve({
-            extensions: [ '.ts', '.tsx' ]
+            extensions: [ '.js' ]
         }),
 
         //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
@@ -54,9 +53,6 @@ export default {
             sourceMap: false,
             ignoreGlobal: true
         }),
-
-        //  See https://github.com/rollup/plugins/tree/master/packages/typescript for config options
-        typescript(),
 
         //  See https://github.com/rollup/plugins/tree/master/packages/terser for config options
         terser()

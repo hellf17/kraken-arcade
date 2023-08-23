@@ -2,13 +2,12 @@ import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import serve from 'rollup-plugin-serve';
-import typescript from '@rollup/plugin-typescript';
 
 export default {
 
     //  Our game entry point (edit as required)
     input: [
-        './src/game.ts'
+        './src/game.js' // Change the file extension to .js
     ],
 
     //  Where the build file is to be generated.
@@ -36,9 +35,9 @@ export default {
             'typeof FEATURE_SOUND': JSON.stringify(true)
         }),
 
-        //  Parse our .ts source files
+        //  Parse our .js source files
         nodeResolve({
-            extensions: [ '.ts', '.tsx' ]
+            extensions: [ '.js' ] // Only .js files are needed for JavaScript
         }),
 
         //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
@@ -54,9 +53,6 @@ export default {
             sourceMap: true,
             ignoreGlobal: true
         }),
-
-        //  See https://github.com/rollup/plugins/tree/master/packages/typescript for config options
-        typescript(),
 
         //  See https://www.npmjs.com/package/rollup-plugin-serve for config options
         serve({
