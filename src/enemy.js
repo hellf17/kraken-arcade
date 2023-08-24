@@ -17,7 +17,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'enemy' + type);
         scene.add.existing(this);
         scene.physics.world.enable(this);
-        this.setScale(0.2);
+        this.setScale(0.17);
         
 
         switch (type) {

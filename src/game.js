@@ -1,13 +1,13 @@
 import * as Phaser from 'phaser';
 import { createPlayer, loadPlayer } from './player';
 import { createProjectile, loadProjectiles, loadProjectileSound, createProjectileSound, playProjectileSound } from './projectile';
-import { Enemy, loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
+import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 
 
 export default class Game extends Phaser.Scene
 {
   player
-  projectiles = []
+  projectiles = [] //need to implement the projectile class to the projectiles.js file (like enemy class)
   hearts = []
   buffs = []
   debuffs = []
@@ -86,32 +86,32 @@ export default class Game extends Phaser.Scene
       
   }
 
-  handlePlayerEnemyCollision (enemiesGroup, player){
-    for (let i = enemiesGroup.getChildren().length - 1; i >= 0; i--) {
-      const enemy = enemiesGroup.getChildren()[i];
-      if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
-        enemy.destroy();
-        //player.receiveDamage(1); - needs to implement the hitpoints function to the player class
-      }
+  handlePlayerEnemyCollision (player, enemy){
+    for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+        const enemy = this.enemiesGroup.getChildren()[i];
+        if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
+            enemy.destroy();
+            //player.receiveDamage(1); - needs to implement the hitpoints function to the player class
+        }
     }
-  }
+}
 
-  handleProjectileEnemyCollision (enemiesGroup, projectiles){
-    for (let i = enemiesGroup.getChildren().length - 1; i >= 0; i--) {
-      const enemy = enemiesGroup.getChildren()[i];
-      for (let j = projectiles.length - 1; j >= 0; j--) {
-          const projectile = projectiles[j];
-          const enemyBounds = enemy.getBounds();
-          const projectileBounds = projectile.getBounds();
-          if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
-              // Enemy is hit by projectile
-              enemy.receiveDamage(1); // need to implement the damage property to the projectile class
-              projectiles.splice(j, 1);
-              projectile.destroy();
-          }
-      }
+handleProjectileEnemyCollision (enemy, projectile){
+    for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+        const enemy = this.enemiesGroup.getChildren()[i];
+        for (let j = this.projectiles.length - 1; j >= 0; j--) {
+            const projectile = this.projectiles[j];
+            const enemyBounds = enemy.getBounds();
+            const projectileBounds = projectile.getBounds();
+            if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
+                // Enemy is hit by projectile
+                enemy.receiveDamage(1); // need to implement the damage property to the projectile class
+                this.projectiles.splice(j, 1);
+                projectile.destroy();
+            }
+        }
     }
-  }
+}
   
     update() {
       // Player movements
