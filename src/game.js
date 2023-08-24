@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { createPlayer, loadPlayer } from './player';
 import { createProjectile, loadProjectiles, loadProjectileSound, createProjectileSound, playProjectileSound } from './projectile';
-import { Enemy, loadEnemies, spawnEnemy } from './enemy';
+import { Enemy, loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 
 
 export default class Game extends Phaser.Scene
@@ -18,12 +18,10 @@ export default class Game extends Phaser.Scene
         super('game')
 
         // Initialize enemies variables
-        const enemy = new Enemy(this.scene, spawnX, spawnY, enemyType);
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
         this.maxEnemyIncreaseInterval = 30000; // Initial interval for increasing enemies
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
         this.enemies = []; // Array to store enemy instances
-        this.enemiesGroup = this.physics.add.group();
     
     }
 
@@ -40,6 +38,9 @@ export default class Game extends Phaser.Scene
     }
 
     create() {      
+      // Initialize physics system
+      this.physics.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
+
       // Get screen dimensions
       const screenWidth = window.innerWidth
       const screenHeight = window.innerHeight
@@ -59,7 +60,7 @@ export default class Game extends Phaser.Scene
       // Create and play the background sound
       const backgroundSound = this.sound.add('backgroundSound', { loop: true });
       backgroundSound.play();
-
+         
       // Create the projectile sound
       createProjectileSound(this);
 
@@ -78,11 +79,39 @@ export default class Game extends Phaser.Scene
     });
       this.pointer = this.input.activePointer
      
-    // Create enemies and animates it
-    //  spawnEnemy(this)
-    
-	  //Set player and enemies/projectiles colliders
+    // Create enemies group and set collisions with the player and projectiles
+    this.enemiesGroup = this.physics.add.group();
+    this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
+    this.physics.add.collider(this.enemiesGroup, this.projectiles, this.handleProjectileEnemyCollision, null, this);
+      
+  }
+
+  handlePlayerEnemyCollision (enemiesGroup, player){
+    for (let i = enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+      const enemy = enemiesGroup.getChildren()[i];
+      if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
+        enemy.destroy();
+        //player.receiveDamage(1); - needs to implement the hitpoints function to the player class
+      }
     }
+  }
+
+  handleProjectileEnemyCollision (enemiesGroup, projectiles){
+    for (let i = enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+      const enemy = enemiesGroup.getChildren()[i];
+      for (let j = projectiles.length - 1; j >= 0; j--) {
+          const projectile = projectiles[j];
+          const enemyBounds = enemy.getBounds();
+          const projectileBounds = projectile.getBounds();
+          if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
+              // Enemy is hit by projectile
+              enemy.receiveDamage(1); // need to implement the damage property to the projectile class
+              projectiles.splice(j, 1);
+              projectile.destroy();
+          }
+      }
+    }
+  }
   
     update() {
       // Player movements
@@ -142,34 +171,13 @@ export default class Game extends Phaser.Scene
         }
       }
 
-      //Call the spawnEnemy function to potentially spawn new enemies
-      spawnEnemy(this);
+      //Update enemies
+      trackPlayerAndMove(this, this.enemiesGroup);
 
-      // Check for collisions between enemies and projectiles
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-          const enemy = this.enemies[i];
-          for (let j = this.projectiles.length - 1; j >= 0; j--) {
-            const projectile = this.projectiles[j];
-            if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), projectile.getBounds())) {
-              // Enemy is hit by projectile
-              enemy.receiveDamage(projectile.damage);
-              this.projectiles.splice(j, 1);
-              projectile.destroy();
-            }
-          }
-        }
-    
-      // Check for collisions between enemies and the player
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-          const enemy = this.enemies[i];
-          if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.player.getBounds())) {
-            // Enemy collides with player
-            // Add logic here to handle what happens when an enemy collides with the player
-            enemy.destroy();
-            this.enemies.splice(i, 1);
-          }
-        }
-      }
+      //Call the spawnEnemy function to potentially spawn new enemies
+      spawnEnemy(this, this.time.now);
+
+  }
 }
 
 const config = {

@@ -12,11 +12,13 @@ const loadEnemies = (scene) => {
     scene.load.image('enemy3', 'src/assets/images/still-image/enemies/enemy3.png');
 };
 
-class Enemy extends Phaser.GameObjects.Sprite {
+class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type) {
         super(scene, x, y, 'enemy' + type);
         scene.add.existing(this);
         scene.physics.world.enable(this);
+        this.setScale(0.2);
+        
 
         switch (type) {
             case EnemyType.Type1:
@@ -37,11 +39,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
         }
         // Register this enemy instance with the physics world
         this.scene.physics.world.add(this);
-    }
-
-    update(target) {
-        const angle = Phaser.Math.Angle.Between(this.x, this.y, target.x, target.y);
-        this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+        
     }
 
     receiveDamage(damage) {
@@ -53,11 +51,16 @@ class Enemy extends Phaser.GameObjects.Sprite {
     }
 }
 
-const spawnEnemy = (scene) => {
-    const currentTime = scene.time.now;
+const spawnEnemy = (scene, currentTime) => {
     const elapsedTimeSinceLastIncrease = currentTime - scene.lastEnemyIncreaseTime;
 
-    if (scene.enemies.length < scene.maxEnemiesOnScreen) {
+    // Increase maxEnemiesOnScreen every enemyIncreaseInterval
+    if (elapsedTimeSinceLastIncrease >= scene.maxEnemyIncreaseInterval) {
+        scene.maxEnemiesOnScreen += 2;
+        scene.lastEnemyIncreaseTime = currentTime;
+    }
+
+    if (scene.enemiesGroup.getChildren().length < scene.maxEnemiesOnScreen) {
         // Spawn outside the screen
         const spawnSide = Phaser.Math.Between(0, 3); // 0: top, 1: right, 2: bottom, 3: left
         let spawnX, spawnY;
@@ -83,20 +86,23 @@ const spawnEnemy = (scene) => {
 
         const enemyType = Phaser.Math.Between(EnemyType.Type1, EnemyType.Type3);
         const enemy = new Enemy(scene, spawnX, spawnY, enemyType);
+        enemy.setData('speed', enemy.speed);
         scene.enemiesGroup.add(enemy);
     }
-
-    // Increase maxEnemiesOnScreen every enemyIncreaseInterval
-    if (elapsedTimeSinceLastIncrease >= scene.maxEnemyIncreaseInterval) {
-        scene.maxEnemiesOnScreen += 2;
-        scene.lastEnemyIncreaseTime = currentTime;
-    }
-
-    return scene.enemiesGroup.add(enemy);
 };
 
-export { loadEnemies, Enemy, spawnEnemy };
+const trackPlayerAndMove = (scene, enemiesGroup) => {
+    enemiesGroup.getChildren().forEach((enemy) => {
+        const player = scene.player;
+        const speed = enemy.getData('speed');
+        const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
+        const velocityX = Math.cos(angle) * speed;
+        const velocityY = Math.sin(angle) * speed;
+        enemy.setVelocity(velocityX, velocityY);
+    });
+};
 
+export { loadEnemies, spawnEnemy, trackPlayerAndMove };
 
 
 //export const loadEnemies = (scene: Phaser.Scene): void => {
