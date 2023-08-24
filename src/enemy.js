@@ -24,17 +24,20 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             case EnemyType.Type1:
                 this.hitpoints = 3;
                 this.speed = 70;
-                this.xpReward = 10;
+                this.xpReward = 10
+                this.damage = 1;
                 break;
             case EnemyType.Type2:
                 this.hitpoints = 5;
                 this.speed = 90;
                 this.xpReward = 15;
+                this.damage = 2;
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;
                 this.speed = 110;
                 this.xpReward = 20;
+                this.damage = 3;
                 break;
         }
         // Register this enemy instance with the physics world
@@ -87,6 +90,7 @@ const spawnEnemy = (scene, currentTime) => {
         const enemyType = Phaser.Math.Between(EnemyType.Type1, EnemyType.Type3);
         const enemy = new Enemy(scene, spawnX, spawnY, enemyType);
         enemy.setData('speed', enemy.speed);
+        enemy.setData('damage', enemy.damage);
         scene.enemiesGroup.add(enemy);
     }
 };
