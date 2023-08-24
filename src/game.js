@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { createPlayer, loadPlayer } from './player';
+import { createPlayer, loadPlayer, movePlayer } from './player';
 import { createProjectile, loadProjectiles, loadProjectileSound, createProjectileSound, playProjectileSound } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 
@@ -89,9 +89,10 @@ export default class Game extends Phaser.Scene
   handlePlayerEnemyCollision (player, enemy){
     for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
         const enemy = this.enemiesGroup.getChildren()[i];
+        const enemyDamage = enemy.getData('damage');
         if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
             enemy.destroy();
-            //player.receiveDamage(1); - needs to implement the hitpoints function to the player class
+            player.receiveDamage(enemyDamage);
         }
     }
 }
@@ -105,7 +106,7 @@ handleProjectileEnemyCollision (enemy, projectile){
             const projectileBounds = projectile.getBounds();
             if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                 // Enemy is hit by projectile
-                enemy.receiveDamage(1); // need to implement the damage property to the projectile class
+                enemy.receiveDamage(1); // need to implement the proejctile class and damage property to ir
                 this.projectiles.splice(j, 1);
                 projectile.destroy();
             }
@@ -115,25 +116,7 @@ handleProjectileEnemyCollision (enemy, projectile){
   
     update() {
       // Player movements
-      const baseVeloc = 150;
-      let velocityX = 0;
-      let velocityY = 0;
-  
-      if (this.keys.left.isDown) {
-          velocityX = -baseVeloc;
-      } 
-      if (this.keys.right.isDown) {
-          velocityX = baseVeloc;
-      }
-      if (this.keys.down.isDown) {
-          velocityY = baseVeloc;
-      } 
-      if (this.keys.up.isDown) {
-          velocityY = -baseVeloc;
-      }
-    
-      // Set player velocity based on input
-      this.player.setVelocity(velocityX, velocityY);
+      movePlayer(this, this.player)
     
       // Shoot projectile towards mouse pointer
       if (this.input.activePointer.leftButtonDown() && this.pointer.getDuration() >= 50 && this.pointer.getDuration() <= 70) {
