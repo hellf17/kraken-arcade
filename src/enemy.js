@@ -7,9 +7,9 @@ const EnemyType = {
 };
 
 const loadEnemies = (scene) => {
-    scene.load.image('enemy1', 'src/assets/images/still-image/enemies/enemy1.png');
-    scene.load.image('enemy2', 'src/assets/images/still-image/enemies/enemy2.png');
-    scene.load.image('enemy3', 'src/assets/images/still-image/enemies/enemy3.png');
+    scene.load.image('enemy0', 'src/assets/images/still-image/enemies/enemy1.png');
+    scene.load.image('enemy1', 'src/assets/images/still-image/enemies/enemy2.png');
+    scene.load.image('enemy2', 'src/assets/images/still-image/enemies/enemy3.png');
 };
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {

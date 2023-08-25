@@ -1,28 +1,33 @@
 import * as Phaser from 'phaser';
-import { createPlayer, loadPlayer, movePlayer } from './player';
-import { createProjectile, loadProjectiles, loadProjectileSound, createProjectileSound, playProjectileSound } from './projectile';
+import { createPlayer, loadPlayer, Player } from './player';
+import { loadProjectiles, loadProjectileSound, createProjectileSound } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 
 
 export default class Game extends Phaser.Scene
 {
-  player
-  projectiles = [] //need to implement the projectile class to the projectiles.js file (like enemy class)
-  hearts = []
-  buffs = []
-  debuffs = []
-
-
     constructor ()
     {
         super('game')
+
+        // Initialize player variables
+        this.playerType = 0; // Initial player type
 
         // Initialize enemies variables
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
         this.maxEnemyIncreaseInterval = 30000; // Initial interval for increasing enemies
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
         this.enemies = []; // Array to store enemy instances
-    
+
+        // Initialize projectile variables
+        this.projectiles = []; // Array to store active projectiles
+
+        // Initialize heart variables
+        this.hearts = []; // Array to store active hearts
+
+        // Initialize buff and debuff variables
+        this.buffs = []; // Array to store active buffs
+        this.debuffs = []; // Array to store active debuffs
     }
 
     preload (){
@@ -38,52 +43,46 @@ export default class Game extends Phaser.Scene
     }
 
     create() {      
-      // Initialize physics system
-      this.physics.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
+    // Initialize physics system
+    this.physics.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
 
-      // Get screen dimensions
-      const screenWidth = window.innerWidth
-      const screenHeight = window.innerHeight
+    // Get screen dimensions
+    const screenWidth = window.innerWidth
+    const screenHeight = window.innerHeight
 
-      // Load the background image
-      const background = this.add.image(0, 0, 'background')
+    // Load the background image
+    const background = this.add.image(0, 0, 'background')
 
-      // Calculate a single scale factor to fit the image proportionally
-      const scale = Math.max(screenWidth / background.width, screenHeight / background.height)
+    // Calculate a single scale factor to fit the image proportionally
+    const scale = Math.max(screenWidth / background.width, screenHeight / background.height)
 
-      // Apply the scale factor to resize the background image
-      background.setScale(scale)
+    // Apply the scale factor to resize the background image
+    background.setScale(scale)
 
-      // Position the image at the center
-      background.setPosition(screenWidth / 2, screenHeight / 2)
+    // Position the image at the center
+    background.setPosition(screenWidth / 2, screenHeight / 2)
 
-      // Create and play the background sound
-      const backgroundSound = this.sound.add('backgroundSound', { loop: true });
-      backgroundSound.play();
+    // Create and play the background sound
+    const backgroundSound = this.sound.add('backgroundSound', { loop: true });
+    backgroundSound.play();
          
-      // Create the projectile sound
-      createProjectileSound(this);
+    // Create the projectile sound
+    createProjectileSound(this);
 
-      // Create player and animates it
-      this.player = createPlayer(this, screenWidth / 2, screenHeight / 2)
-      this.player.anims.play('player', true)
-      this.player.setCollideWorldBounds(true);
-
-      // Initialize player inputs
-      this.keys = this.input.keyboard.addKeys({
-        up: Phaser.Input.Keyboard.KeyCodes.W,
-        down: Phaser.Input.Keyboard.KeyCodes.S,
-        left: Phaser.Input.Keyboard.KeyCodes.A,
-        right: Phaser.Input.Keyboard.KeyCodes.D,
-        ulti: Phaser.Input.Keyboard.KeyCodes.SPACE
-    });
-      this.pointer = this.input.activePointer
+    // Create player and animates it
+    this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType)
+    this.player.anims.play('player', true)
+    this.player.setCollideWorldBounds(true);
      
     // Create enemies group and set collisions with the player and projectiles
     this.enemiesGroup = this.physics.add.group();
     this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
     this.physics.add.collider(this.enemiesGroup, this.projectiles, this.handleProjectileEnemyCollision, null, this);
       
+    // Create player input
+    this.player.setupKeys(this);
+    this.player.movePlayer();
+
   }
 
   handlePlayerEnemyCollision (player, enemy){
@@ -106,7 +105,7 @@ handleProjectileEnemyCollision (enemy, projectile){
             const projectileBounds = projectile.getBounds();
             if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                 // Enemy is hit by projectile
-                enemy.receiveDamage(1); // need to implement the proejctile class and damage property to ir
+                enemy.receiveDamage(1); // need to implement the proejectile class and damage property to it
                 this.projectiles.splice(j, 1);
                 projectile.destroy();
             }
@@ -116,33 +115,10 @@ handleProjectileEnemyCollision (enemy, projectile){
   
     update() {
       // Player movements
-      movePlayer(this, this.player)
+      this.player.movePlayer();
     
       // Shoot projectile towards mouse pointer
-      if (this.input.activePointer.leftButtonDown() && this.pointer.getDuration() >= 50 && this.pointer.getDuration() <= 70) {
-          const mouseX = this.input.activePointer.x;
-          const mouseY = this.input.activePointer.y;
-
-          // Calculate direction vector
-          const directionX = mouseX - this.player.x;
-          const directionY = mouseY - this.player.y;
-
-          // Normalize the direction vector
-          const length = Math.sqrt(directionX * directionX + directionY * directionY);
-          const normalizedDirectionX = directionX / length;
-          const normalizedDirectionY = directionY / length;
-
-          // Set velocity for the projectile using the normalized direction
-          const projectileSpeed = 500; // Adjust as needed
-          const projectile = createProjectile(this, this.player.x, this.player.y);
-          projectile.setVelocity(projectileSpeed * normalizedDirectionX, projectileSpeed * normalizedDirectionY);
-
-          // Play the projectile sound
-          playProjectileSound();
-          
-          // Add the projectile to the array of active projectiles
-          this.projectiles.push(projectile);
-      }
+      this.player.playerAttacks(this);
       
       // Check if projectiles are out of screen bounds and remove them
       for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -154,11 +130,15 @@ handleProjectileEnemyCollision (enemy, projectile){
         }
       }
 
-      //Update enemies
+      //  Update enemies
       trackPlayerAndMove(this, this.enemiesGroup);
 
-      //Call the spawnEnemy function to potentially spawn new enemies
+      //  Call the spawnEnemy function to potentially spawn new enemies
       spawnEnemy(this, this.time.now);
+
+      //  Handle player dying
+      //if (this.player.isAlive === false) {
+      //this.scene.start('game-over');}
 
   }
 }
