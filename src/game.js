@@ -65,6 +65,16 @@ export default class Game extends Phaser.Scene
     // Create and play the background sound
     const backgroundSound = this.sound.add('backgroundSound', { loop: true });
     backgroundSound.play();
+
+    // Create and draw the XP tracker text
+    this.xpTrackerText = this.add.text(screenHeight - 10, 5, 'XP: 0', {
+        fontFamily: 'Arial',
+        fontSize: '30px',
+        color: '#000000',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'
+    });
          
     // Create the projectile sound
     createProjectileSound(this);
@@ -82,65 +92,71 @@ export default class Game extends Phaser.Scene
     // Create player input
     this.player.setupKeys(this);
     this.player.movePlayer();
-
-  }
-
-  handlePlayerEnemyCollision (player, enemy){
-    for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
-        const enemy = this.enemiesGroup.getChildren()[i];
-        const enemyDamage = enemy.getData('damage');
-        if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
-            enemy.destroy();
-            player.receiveDamage(enemyDamage);
-        }
     }
-}
 
-handleProjectileEnemyCollision (enemy, projectile){
-    for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
-        const enemy = this.enemiesGroup.getChildren()[i];
-        for (let j = this.projectiles.length - 1; j >= 0; j--) {
-            const projectile = this.projectiles[j];
-            const enemyBounds = enemy.getBounds();
-            const projectileBounds = projectile.getBounds();
-            if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
-                // Enemy is hit by projectile
-                enemy.receiveDamage(1); // need to implement the proejectile class and damage property to it
-                this.projectiles.splice(j, 1);
-                projectile.destroy();
+    handlePlayerEnemyCollision (player, enemy){
+        for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+            const enemy = this.enemiesGroup.getChildren()[i];
+            const enemyDamage = enemy.getData('damage');
+            if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
+                enemy.destroy();
+                player.receiveDamage(enemyDamage);
             }
         }
     }
-}
+
+    handleProjectileEnemyCollision (enemy, projectile){
+        for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
+            const enemy = this.enemiesGroup.getChildren()[i];
+            for (let j = this.projectiles.length - 1; j >= 0; j--) {
+                const projectile = this.projectiles[j];
+                const enemyBounds = enemy.getBounds();
+                const projectileBounds = projectile.getBounds();
+                if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
+                    // Enemy is hit by projectile
+                    enemy.receiveDamage(1); // need to implement the projectile class and damage property to it
+                    this.projectiles.splice(j, 1);
+                    projectile.destroy();
+
+                    // Check if enemy is dead and add XP to player
+                    if (enemy.hitpoints <= 0) {
+                        this.player.xpTracker += enemy.xpReward;
+                    }
+                }
+            }
+        }
+    }
   
     update() {
-      // Player movements
-      this.player.movePlayer();
+        //Update the XP tracker
+        this.xpTrackerText.setText('XP: ' + this.player.xpTracker);
+        
+        //Player movements
+        this.player.movePlayer();
     
-      // Shoot projectile towards mouse pointer
-      this.player.playerAttacks(this);
+        //Shoot projectile towards mouse pointer
+        this.player.playerAttacks(this);
       
-      // Check if projectiles are out of screen bounds and remove them
-      for (let i = this.projectiles.length - 1; i >= 0; i--) {
-        const projectile = this.projectiles[i];
-        if (projectile.x < 0 || projectile.x > this.game.config.width || projectile.y < 0 || projectile.y > this.game.config.height) {
-            // Remove the projectile from the array and destroy it
-            this.projectiles.splice(i, 1);
-            projectile.destroy();
+        //Check if projectiles are out of screen bounds and remove them
+        for (let i = this.projectiles.length - 1; i >= 0; i--) {
+            const projectile = this.projectiles[i];
+            if (projectile.x < 0 || projectile.x > this.game.config.width || projectile.y < 0 || projectile.y > this.game.config.height) {
+                // Remove the projectile from the array and destroy it
+                this.projectiles.splice(i, 1);
+                projectile.destroy();
+            }
         }
-      }
 
-      //  Update enemies
-      trackPlayerAndMove(this, this.enemiesGroup);
+        //Update enemies
+        trackPlayerAndMove(this, this.enemiesGroup, this.projectiles);
 
-      //  Call the spawnEnemy function to potentially spawn new enemies
-      spawnEnemy(this, this.time.now);
+        //Call the spawnEnemy function to potentially spawn new enemies
+        spawnEnemy(this, this.time.now);
 
-      //  Handle player dying
-      //if (this.player.isAlive === false) {
-      //this.scene.start('game-over');}
-
-  }
+        //Handle player dying
+        //if (this.player.isAlive === false) {
+        //this.scene.start('game-over');}
+    }
 }
 
 const config = {

@@ -17,25 +17,25 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'enemy' + type);
         scene.add.existing(this);
         scene.physics.world.enable(this);
-        this.setScale(0.17);
+        this.setScale(0.12);
         
 
         switch (type) {
             case EnemyType.Type1:
                 this.hitpoints = 3;
-                this.speed = 70;
+                this.speed = 80;
                 this.xpReward = 10
                 this.damage = 1;
                 break;
             case EnemyType.Type2:
                 this.hitpoints = 5;
-                this.speed = 90;
+                this.speed = 130;
                 this.xpReward = 15;
                 this.damage = 2;
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;
-                this.speed = 110;
+                this.speed = 180;
                 this.xpReward = 20;
                 this.damage = 3;
                 break;
@@ -95,13 +95,48 @@ const spawnEnemy = (scene, currentTime) => {
     }
 };
 
-const trackPlayerAndMove = (scene, enemiesGroup) => {
+const trackPlayerAndMove = (scene, enemiesGroup, projectiles) => {
     enemiesGroup.getChildren().forEach((enemy) => {
         const player = scene.player;
         const speed = enemy.getData('speed');
-        const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
-        const velocityX = Math.cos(angle) * speed;
-        const velocityY = Math.sin(angle) * speed;
+        const angleToPlayer = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
+
+        // Calculate dodge angle offset
+        const dodgeAngleOffset = Math.PI / 2; // 90 degrees
+
+        // Calculate dodge angles in both directions
+        const dodgeAngleLeft = angleToPlayer + dodgeAngleOffset;
+        const dodgeAngleRight = angleToPlayer - dodgeAngleOffset;
+
+        // Check if dodging left avoids projectiles
+        const canDodgeLeft = !projectiles.some((projectile) => {
+            const angleToProjectile = Phaser.Math.Angle.Between(enemy.x, enemy.y, projectile.x, projectile.y);
+            const distanceToProjectile = Phaser.Math.Distance.Between(enemy.x, enemy.y, projectile.x, projectile.y);
+            return Math.abs(angleToProjectile - dodgeAngleLeft) < Math.PI / 4 && distanceToProjectile < speed * 2;
+        });
+
+        // Check if dodging right avoids projectiles
+        const canDodgeRight = !projectiles.some((projectile) => {
+            const angleToProjectile = Phaser.Math.Angle.Between(enemy.x, enemy.y, projectile.x, projectile.y);
+            const distanceToProjectile = Phaser.Math.Distance.Between(enemy.x, enemy.y, projectile.x, projectile.y);
+            return Math.abs(angleToProjectile - dodgeAngleRight) < Math.PI / 4 && distanceToProjectile < speed * 2;
+        });
+
+        // Decide dodge direction based on available path
+        let dodgeDirection = 0; // 0 for no dodge, -1 for left, 1 for right
+
+        if (canDodgeLeft && !canDodgeRight) {
+            dodgeDirection = -1;
+        } else if (!canDodgeLeft && canDodgeRight) {
+            dodgeDirection = 1;
+        }
+
+        // Set dodge angle based on dodge direction
+        const dodgeAngle = dodgeDirection === -1 ? dodgeAngleLeft : (dodgeDirection === 1 ? dodgeAngleRight : angleToPlayer);
+
+        // Calculate velocity based on dodge angle
+        const velocityX = Math.cos(dodgeAngle) * speed;
+        const velocityY = Math.sin(dodgeAngle) * speed;
         enemy.setVelocity(velocityX, velocityY);
     });
 };
