@@ -28,7 +28,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.isPlayerHit = false;
         this.isPlayerInvencible = false;
         this.isPlayerUltimateReady = false;
-        this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
+        this.fireRateType = 0; // 0 is the fire rate for the normal shot, 1 for automatic shot
 
         this.xpTracker = 0; // need to implent the XP incrementation with the timeSurvived
         this.timeSurvived = 0;
@@ -55,6 +55,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         scene.physics.world.add(this);
+
     }
 
     setupKeys (scene){
@@ -68,23 +69,29 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.pointer = scene.input.activePointer
     }
 
-    timeTracker(){
-        if (this.isAlive){
-            this.scene.delayedCall(1000, () => { // 1000ms delay
-                this.timeSurvived += 1;})
+    timeTracker() {
+        if (this.isPlayerAlive) {
+            const currentTime = this.scene.time.now;
             
-            if (this.timeSurvived == 10000) {
-                this.xpTracker += 10;
+            if (this.lastTimeSurvivedUpdate === undefined) {
+                this.lastTimeSurvivedUpdate = currentTime;
             }
-            else if (this.timeSurvived > 10000){
-                if (this.timeSurvived % 10000 == 0){
-                    this.xpTracker += 10;
-                }
-            }    
+            
+            const elapsedTime = currentTime - this.lastTimeSurvivedUpdate;
+            this.timeSurvived += elapsedTime;
+            this.lastTimeSurvivedUpdate = currentTime;
+            
+            if (this.timeSurvived >= 10000 && this.timeSurvived - elapsedTime < 10000) {
+                this.xpTracker += 10;
+            } else if (this.timeSurvived > 10000) {
+                const remainingTime = this.timeSurvived - 10000;
+                const additionalXP = Math.floor(remainingTime / 10000) * 10;
+                this.xpTracker += additionalXP;
+            }
         }
     }
 
-    movePlayer (multiVeloc = 1) {    
+    movePlayer (scene, multiveloc = 1) {    
         // Player movements
         const baseVeloc = 150;
         let velocityX = 0;
@@ -92,16 +99,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     
         
         if (this.keys.left.isDown) {
-            velocityX = -baseVeloc * multiVeloc;
+            velocityX = -baseVeloc * multiveloc;
         } 
         if (this.keys.right.isDown) {
-            velocityX = baseVeloc * multiVeloc;
+            velocityX = baseVeloc * multiveloc;
         }
         if (this.keys.down.isDown) {
-            velocityY = baseVeloc * multiVeloc;
+            velocityY = baseVeloc * multiveloc;
         } 
         if (this.keys.up.isDown) {
-            velocityY = -baseVeloc * multiVeloc;
+            velocityY = -baseVeloc * multiveloc;
         }
           
         // Set player velocity based on input
@@ -195,7 +202,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.isHit = true;
     
         if (this.hitpoints <= 0) {
-            this.isAlive = false;
             this.kill()
         }
     }
@@ -203,27 +209,42 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     kill(){
         //this.moveState.die();
         //this.animState.die();
-        this.isAlive = false;
+        this.isPlayerAlive = false;
         this.destroy();
         //this.scene.scene.start('game-over', { timeSurvived: this.timeSurvived });    
     }
 
-    update(){
-        this.timeTracker();
-
-        if (this.isHit){
-            this.isHit = false;
-      }
+    update() {   
+        // Calculate angle to cursor
+        const angleToCursor = Phaser.Math.Angle.Between(this.x, this.y, this.scene.input.activePointer.x, this.scene.input.activePointer.y);
+    
+        // Update sprite rotation based on angle
+        this.setRotation(angleToCursor);
+    
+        // Update sprite scale to flip horizontally if needed
+        if ((angleToCursor > Math.PI / 4 && angleToCursor < (3 * Math.PI) / 4) || (angleToCursor < -Math.PI / 4 && angleToCursor > -(3 * Math.PI) / 4)) {
+            if (this.originalFacingX === 1) {
+                this.setFlipX(true); // Flip sprite horizontally
+                this.originalFacingX = -1;
+            }
+        } else {
+            if (this.originalFacingX === -1) {
+                this.setFlipX(false); // Reset sprite flip
+                this.originalFacingX = 1;
+            }
+        }
     }
-};
+}
 
 const createPlayer = (scene, screenX, screenY, type) => {
     const player = new Player(scene, screenX, screenY, type);
     createAnimations(scene);
 
+    // Add a property to the player to store its original facing direction
+    player.originalFacing = 1; // 1 for right, -1 for left
+
     return player;
 };
-
 
 const createAnimations = (scene) => {
     scene.anims.create({
