@@ -153,7 +153,7 @@ const trackPlayerAndMove = (scene, enemiesGroup, projectiles) => {
 export { loadEnemies, spawnEnemy, trackPlayerAndMove };
 
 
-//export const loadEnemies = (scene: Phaser.Scene): void => {
+//const loadEnemies = (scene: Phaser.Scene): void => {
 //Load enemy images and animations
 //    scene.load.spritesheet('enemy-' + EnemyType.Type1, 'assets/enemies/enemy-type1.png', { frameWidth: 32, frameHeight: 32 });
 //    scene.load.spritesheet('enemy-' + EnemyType.Type2, 'assets/enemies/enemy-type2.png', { frameWidth: 32, frameHeight: 32 });

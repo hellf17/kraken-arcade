@@ -44,13 +44,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
                 this.hitpoints = 5;
+                this.maxHitpoints = 5;
                 this.baseVelocity = 70;
                 this.xpTracker = 0;
+                this.shield = 0;
                 break;
             case playerType.Type2:
                 this.hitpoints = 4;
+                this.maxHitpoints = 4;
                 this.baseVelocity = 80;
                 this.xpTracker = 0;
+                this.shield = 0;
                 break;
         }
 
@@ -210,8 +214,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //this.moveState.die();
         //this.animState.die();
         this.isPlayerAlive = false;
-        this.destroy();
-        //this.scene.scene.start('game-over', { timeSurvived: this.timeSurvived });    
+        this.destroy(); 
     }
 
     update() {   

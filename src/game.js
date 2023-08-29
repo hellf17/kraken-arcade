@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { createPlayer, loadPlayer, Player } from './player';
 import { loadProjectiles, loadProjectileSound, createProjectileSound } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
+import { Heart, loadHearts, drawUiHearts, removeHeart } from './heart';
 
 
 export default class Game extends Phaser.Scene
@@ -11,7 +12,7 @@ export default class Game extends Phaser.Scene
         super('game')
 
         //Initialize player variables
-        this.playerType = 0; // Initial player type
+        this.playerType = 0; // Initial player type - 0 for Kraken, 1 for Mortis (maybe add more later)
 
         //Initialize enemies variables
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
@@ -24,6 +25,8 @@ export default class Game extends Phaser.Scene
 
         //Initialize heart variables
         this.hearts = []; // Array to store active hearts
+        this.heartSpawnInterval = 30000; // Initial interval for spawning hearts
+        this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen 
 
         //Initialize buff and debuff variables
         this.buffs = []; // Array to store active buffs
@@ -37,7 +40,7 @@ export default class Game extends Phaser.Scene
         loadProjectiles(this)
         loadProjectileSound(this)
         loadEnemies(this)
-        //loadHearts(this)
+        loadHearts(this)
         //loadBuffs(this)
         //loadDebuffs(this)
     }
@@ -86,6 +89,9 @@ export default class Game extends Phaser.Scene
         this.player.setupKeys(this);
         this.player.movePlayer();
 
+        //Create inital UI hearts
+        drawUiHearts(this);
+
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
             fontFamily: 'Arial',
@@ -115,7 +121,24 @@ export default class Game extends Phaser.Scene
             const enemyDamage = enemy.getData('damage');
             if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
                 enemy.destroy();
+                removeHeart(this, enemyDamage);
                 player.receiveDamage(enemyDamage);
+            }
+        }
+    }
+
+    handlePlayerHeartCollision (player, heart){
+        for (let i = this.hearts.length - 1; i >= 0; i--) {
+            const heart = this.hearts[i];
+            const heartHealth = heart.getData('health');
+            const heartShield = heart.getData('shield');
+            const heartMaxHitpointsIncrease = heart.getData('maxHitpointsIncrease');
+            const heartType = heart.getData('type');
+            if (Phaser.Geom.Intersects.RectangleToRectangle(heart.getBounds(), player.getBounds())) {
+                heart.destroy();
+                player.hitpoints += heartHealth;
+                player.shield += heartShield;
+                player.maxHitpoints += heartMaxHitpointsIncrease;
             }
         }
     }
@@ -181,6 +204,9 @@ export default class Game extends Phaser.Scene
 
         //Call the spawnEnemy function to potentially spawn new enemies
         spawnEnemy(this, this.time.now);
+
+        //Call the spawnAndUpdateHearts function to potentially spawn new hearts
+        //spawnHearts(this, this.time.now);
 
         //Handle player dying
         //if (this.player.isAlive === false) {
