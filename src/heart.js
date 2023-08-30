@@ -132,12 +132,12 @@ const removeUiHeart = (scene, enemyDamage) => {
 }
 
 const addUiHeart = (scene, heartGame) => { // needs proper implementation and testing
-    const centerX = scene.cameras.main.width / 2;
+    const lastHeart = scene.heartsUiGroup.getChildren()[scene.heartsUiGroup.getChildren().length - 1];
     const heartSpacing = 32;
 
     // Draw hearts based on the heart health value
     for (let i = 0; i < heartGame.health; i++) {
-        const heartX = centerX + (heartSpacing * (scene.player.hitpoints + i));
+        const heartX = lastHeart.x + heartSpacing;
         const heart = scene.add.sprite(heartX, 30, 'heart' + heartGame.type).setScrollFactor(0).setDepth(1).setScale(0.19);
         heart.setFrame(0); // Set the first frame
         heart.anims.play('heart' + heartGame.type, true);
