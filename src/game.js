@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { createPlayer, loadPlayer, Player } from './player';
 import { loadProjectiles, loadProjectileSound, createProjectileSound } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
-import { Heart, loadHearts, drawUiHearts, removeHeart } from './heart';
+import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 
 
 export default class Game extends Phaser.Scene
@@ -18,15 +18,14 @@ export default class Game extends Phaser.Scene
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
         this.maxEnemyIncreaseInterval = 30000; // Initial interval for increasing enemies
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
-        this.enemies = []; // Array to store enemy instances
 
         //Initialize projectile variables
         this.projectiles = []; // Array to store active projectiles
 
         //Initialize heart variables
-        this.hearts = []; // Array to store active hearts
-        this.heartSpawnInterval = 30000; // Initial interval for spawning hearts
-        this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen 
+        this.heartSpawnInterval = 5000; // Initial interval for spawning hearts
+        this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen
+        this.lastHeartSpawnTime = 0; // Initialize to 0
 
         //Initialize buff and debuff variables
         this.buffs = []; // Array to store active buffs
@@ -89,8 +88,14 @@ export default class Game extends Phaser.Scene
         this.player.setupKeys(this);
         this.player.movePlayer();
 
-        //Create inital UI hearts
-        drawUiHearts(this);
+        //Create inital UI hearts group
+        this.heartsUiGroup = this.physics.add.group();
+        drawUiHeart(this);
+
+        //Create hearts group and set collisions with the player
+        this.heartGameGroup = this.physics.add.group();
+        this.physics.add.collider(this.player, this.heartGameGroup, this.handlePlayerHeartCollision, null, this);
+                
 
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
@@ -120,25 +125,25 @@ export default class Game extends Phaser.Scene
             const enemy = this.enemiesGroup.getChildren()[i];
             const enemyDamage = enemy.getData('damage');
             if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
+                removeUiHeart(this, enemyDamage);
                 enemy.destroy();
-                removeHeart(this, enemyDamage);
                 player.receiveDamage(enemyDamage);
             }
         }
     }
 
-    handlePlayerHeartCollision (player, heart){
-        for (let i = this.hearts.length - 1; i >= 0; i--) {
-            const heart = this.hearts[i];
-            const heartHealth = heart.getData('health');
-            const heartShield = heart.getData('shield');
-            const heartMaxHitpointsIncrease = heart.getData('maxHitpointsIncrease');
-            const heartType = heart.getData('type');
+    handlePlayerHeartCollision(player, heart) {
+        for (let i = this.heartGameGroup.getChildren().length - 1; i >= 0; i--) {
+            const heart = this.heartGameGroup.getChildren()[i];
+            
             if (Phaser.Geom.Intersects.RectangleToRectangle(heart.getBounds(), player.getBounds())) {
-                heart.destroy();
-                player.hitpoints += heartHealth;
-                player.shield += heartShield;
-                player.maxHitpoints += heartMaxHitpointsIncrease;
+                if (player.hitpoints < player.maxHitpoints) { // If player is not at max hitpoints adds the heart to UI and increases hitpoints
+                    player.hitpoints += heart.getData('health');
+                    addUiHeart(this, heart);
+                }
+                player.shield += heart.getData('shield');
+                player.maxHitpoints += heart.getData('maxHitpointsIncrease');                
+                heart.destroy();           
             }
         }
     }
@@ -206,7 +211,7 @@ export default class Game extends Phaser.Scene
         spawnEnemy(this, this.time.now);
 
         //Call the spawnAndUpdateHearts function to potentially spawn new hearts
-        //spawnHearts(this, this.time.now);
+        spawnHearts(this, this.time.now);
 
         //Handle player dying
         //if (this.player.isAlive === false) {

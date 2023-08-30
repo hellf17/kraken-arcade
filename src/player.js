@@ -1,7 +1,6 @@
 import * as Phaser from 'phaser'
 import { playProjectileSound, createProjectile } from './projectile';
 
-
 const playerType = {
     Type1: 0,
     Type2: 1
@@ -37,7 +36,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setDepth(3);
         this.body.setSize(50, 100);
         this.body.setOffset(50, 0);
-        this.setScale(1.25);
+        this.setScale(1.15);
         this.setMaxVelocity(300, 300);
         this.setDrag(1000);
 
@@ -121,14 +120,15 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     playerAttacks (scene) {
         // Set velocity for the projectile
-        const projectileSpeed = 350; // Maybe adjusted
+        const projectileSpeed = 350; // Can be adjusted
 
         if (this.keys.ulti.isDown) {
             if (!this.isPlayerAttacking && this.isPlayerUltimateReady) {
                 this.isPlayerAttacking = true;
     
-                // Create the ultimate attack
+                // Create the ultimate attack - laser beam that follow the mouse and has 5 seconds of duration
                 const ultimateAttack = scene.physics.add.spritesheet(this.x, this.y, 'ultimateAttack');
+                ultimateAttack.anims.play('ultimateAttack', true);
                 ultimateAttack.setScale(1.5);
                 ultimateAttack.setDepth(2);
                 ultimateAttack.body.setSize(50, 100);
@@ -137,6 +137,19 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 ultimateAttack.setCollideWorldBounds(true);
                 ultimateAttack.setBounce(1);
                 ultimateAttack.setDrag(1000);
+
+/*                 // Add ultimate attack to the scene
+                scene.ultimateAttacks.push(ultimateAttack);
+
+                // Play ultimate sound
+                playUltimateSound();
+
+                // Set the ultimate attack duration
+                scene.time.delayedCall(5000, () => { // 5000ms delay for the attack animation
+                    ultimateAttack.destroy();
+                    this.isPlayerUltimateReady = false;
+                    this.isPlayerAttacking = false;
+                }); */
             }
         }
         

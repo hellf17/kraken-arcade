@@ -77,16 +77,19 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
                 this.health = 1;
                 this.shield = 0;
                 this.maxHitpointsIncrease = 0;
+                this.type = heartType.Type1;
                 break;
             case heartType.Type2:
                 this.health = 2;
                 this.shield = 1;
                 this.maxHitpointsIncrease = 0;
+                this.type = heartType.Type2;
                 break;
             case heartType.Type3:
                 this.health = 1;
-                this.shield = 1;
+                this.shield = 0;
                 this.maxHitpointsIncrease = 1;
+                this.type = heartType.Type3;
                 break;
         }
 
@@ -96,7 +99,7 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
-const drawUiHearts = (scene, type = 'Red') => {
+const drawUiHeart = (scene, type = 'Red') => {
     createHeartAnimation(scene);
 
     const centerX = scene.cameras.main.width / 2;
@@ -112,32 +115,64 @@ const drawUiHearts = (scene, type = 'Red') => {
     //Fill hearts for the player's hitpoints
     for (let i = 0; i < scene.player.hitpoints; i++) {
         const heart = scene.add.sprite(centerX + (heartSpacing * i), 30, 'heart' + type).setScrollFactor(0).setDepth(1).setScale(0.19);
-        scene.hearts.push(heart);
         heart.setFrame(0); // Set the first frame
         heart.anims.play('heart' + type, true);
+        scene.heartsUiGroup.add(heart);
     }
 
 };
 
-const removeHeart = (scene, enemyDamage) => {
-    for (let i = scene.hearts.length - 1 ; i > enemyDamage ; i--) {
-        scene.hearts[i].destroy();
-        scene.hearts.splice(i, 1);
+const removeUiHeart = (scene, enemyDamage) => {
+    for (let i = 0; i < enemyDamage; i++) {
+        if (scene.heartsUiGroup.getChildren().length > 0) {
+            const lastHeart = scene.heartsUiGroup.getChildren()[scene.heartsUiGroup.getChildren().length - 1];
+            lastHeart.destroy();
+        }
     }
 }
 
-/* const spawnHearts = (scene, currentTime) => {
-    if (currentTime - scene.lastHeartSpawnTime < scene.heartSpawnInterval && scene.hearts.length < scene.maxHeartsOnScreen) {
-        const heart_type = Phaser.Math.Between(heartType.Type1, heartType.Type3);
-        const heart = new Heart(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), heart_type);
-        heart.setData('health', heart.health);
-        heart.setData('shield', heart.shield);
-        heart.setData('maxHitpointsIncrease', heart.maxHitpointsIncrease);
-        heart.setData('type', heart_type);
-        scene.hearts.push(heart);
-    };
-}; */
+const addUiHeart = (scene, heartGame) => { // needs proper implementation and testing
+    const centerX = scene.cameras.main.width / 2;
+    const heartSpacing = 32;
+
+    // Draw hearts based on the heart health value
+    for (let i = 0; i < heartGame.health; i++) {
+        const heartX = centerX + (heartSpacing * (scene.player.hitpoints + i));
+        const heart = scene.add.sprite(heartX, 30, 'heart' + heartGame.type).setScrollFactor(0).setDepth(1).setScale(0.19);
+        heart.setFrame(0); // Set the first frame
+        heart.anims.play('heart' + heartGame.type, true);
+        scene.heartsUiGroup.add(heart);
+    }
+}
+
+const heartSpawnChances = [
+    { type: heartType.Type1, chance: 0.2 },  // 20% chance
+    { type: heartType.Type2, chance: 0.15 },  // 15% chance
+    { type: heartType.Type3, chance: 0.1 }   // 10% chance
+];
+
+const spawnHearts = (scene, currentTime) => {
+    if (currentTime - scene.lastHeartSpawnTime > scene.heartSpawnInterval && scene.heartGameGroup.getChildren().length < scene.maxHeartsOnScreen) {
+        scene.lastHeartSpawnTime = currentTime;
+        const randomSpawnChance = Math.random();
+        
+        let accumulatedChance = 0;
+        for (const heartSpawnChance of heartSpawnChances) {
+            accumulatedChance += heartSpawnChance.chance;
+            if (randomSpawnChance <= accumulatedChance) {
+                const heart_type = heartSpawnChance.type;
+                const heart = new Heart(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), heart_type);
+                heart.setData('health', heart.health);
+                heart.setData('shield', heart.shield);
+                heart.setData('maxHitpointsIncrease', heart.maxHitpointsIncrease);
+                heart.setData('type', heart.type);
+                scene.heartGameGroup.add(heart);
+                accumulatedChance = 0;
+                break;
+            }
+        }
+    }
+};
 
 
-
-export { Heart, loadHearts, drawUiHearts, removeHeart };
+export { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts };
