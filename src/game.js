@@ -1,8 +1,10 @@
 import * as Phaser from 'phaser';
-import { createPlayer, loadPlayer, Player } from './player';
-import { loadProjectiles, loadProjectileSound, createProjectileSound } from './projectile';
+import { playerType ,createPlayer, loadPlayer, Player } from './player';
+import { projectileType,loadProjectiles, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
+improt
+
 
 
 export default class Game extends Phaser.Scene
@@ -12,7 +14,7 @@ export default class Game extends Phaser.Scene
         super('game')
 
         //Initialize player variables
-        this.playerType = 0; // Initial player type - 0 for Kraken, 1 for Mortis (maybe add more later)
+        this.playerType = this.playerType(Type1); // Initial player type - 1 for Kraken, 2 for Mortis (maybe add more later)
 
         //Initialize enemies variables
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
@@ -20,15 +22,17 @@ export default class Game extends Phaser.Scene
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
 
         //Initialize projectile variables
-        this.projectiles = []; // Array to store active projectiles
+        this.projectileType = projectileType(Type1); // Default projectile type - can change with buffs/debuffs
 
         //Initialize heart variables
-        this.heartSpawnInterval = 5000; // Initial interval for spawning hearts
+        this.heartSpawnInterval = 30000; // Initial interval for spawning hearts
         this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen
         this.lastHeartSpawnTime = 0; // Initialize to 0
 
-        //Initialize buff and debuff variables
+        //Initialize buffs variables
         this.buffs = []; // Array to store active buffs
+
+        //Initialize debuffs variables
         this.debuffs = []; // Array to store active debuffs
     }
 
@@ -71,19 +75,20 @@ export default class Game extends Phaser.Scene
         const backgroundSound = this.sound.add('backgroundSound', { loop: true });
         backgroundSound.play();
 
-        //Create the projectile sound
-        createProjectileSound(this);
-
         //Create player and animates it
         this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType)
-        this.player.anims.play('player', true)
+        this.player.anims.play(('player' + this.playerType), true)
         this.player.setCollideWorldBounds(true);
-        
+                        
+        //Create the projectile groups and sound
+        this.projectilesGroup = this.physics.add.group();
+        createProjectileSound(this);
+
         //Create enemies group and set collisions with the player and projectiles
         this.enemiesGroup = this.physics.add.group();
         this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
         this.physics.add.collider(this.enemiesGroup, this.projectiles, this.handleProjectileEnemyCollision, null, this);
-        
+
         //Create player input
         this.player.setupKeys(this);
         this.player.movePlayer();
@@ -120,45 +125,47 @@ export default class Game extends Phaser.Scene
         );
     }
 
-    handlePlayerEnemyCollision (player, enemy){
+    handlePlayerEnemyCollision (){
         for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
             const enemy = this.enemiesGroup.getChildren()[i];
             const enemyDamage = enemy.getData('damage');
-            if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), player.getBounds())) {
+            if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.player.getBounds())) {
                 removeUiHeart(this, enemyDamage);
                 enemy.destroy();
-                player.receiveDamage(enemyDamage);
+                this.player.receiveDamage(enemyDamage);
             }
         }
     }
 
-    handlePlayerHeartCollision(player, heart) {
+    handlePlayerHeartCollision() {
         for (let i = this.heartGameGroup.getChildren().length - 1; i >= 0; i--) {
             const heart = this.heartGameGroup.getChildren()[i];
-            
-            if (Phaser.Geom.Intersects.RectangleToRectangle(heart.getBounds(), player.getBounds())) {
-                if (player.hitpoints < player.maxHitpoints) { // If player is not at max hitpoints adds the heart to UI and increases hitpoints
-                    player.hitpoints += heart.getData('health');
+            const heartHealth = heart.getData('health');
+            const heartShield = heart.getData('shield');
+            const heartMaxHitpointsIncrease = heart.getData('maxHitpointsIncrease');
+
+            if (Phaser.Geom.Intersects.RectangleToRectangle(heart.getBounds(), this.player.getBounds())) {
+                if (this.player.hitpoints < this.player.maxHitpoints) { // If player is not at max hitpoints adds the heart to UI and increases hitpoints
+                    this.player.hitpoints += heartHealth;
                     addUiHeart(this, heart);
                 }
-                player.shield += heart.getData('shield');
-                player.maxHitpoints += heart.getData('maxHitpointsIncrease');                
+                this.player.shield += heartShield;
+                this.player.maxHitpoints += heartMaxHitpointsIncrease;             
                 heart.destroy();           
             }
         }
     }
 
-    handleProjectileEnemyCollision (enemy, projectile){
+    handleProjectileEnemyCollision (){
         for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
             const enemy = this.enemiesGroup.getChildren()[i];
-            for (let j = this.projectiles.length - 1; j >= 0; j--) {
-                const projectile = this.projectiles[j];
+            for (let j = this.projectilesGroup.getChildren().length - 1; j >= 0; j--) {
+                const projectile = this.projectilesGroup.getChildren()[j];
                 const enemyBounds = enemy.getBounds();
                 const projectileBounds = projectile.getBounds();
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                     // Enemy is hit by projectile
-                    enemy.receiveDamage(1); // need to implement the projectile class and damage property to it
-                    this.projectiles.splice(j, 1);
+                    enemy.receiveDamage(projectile.damage); 
                     projectile.destroy();
 
                     // Check if enemy is dead and add XP to player
@@ -194,15 +201,8 @@ export default class Game extends Phaser.Scene
         // Update player instance
         this.player.update();
       
-        //Check if projectiles are out of screen bounds and remove them
-        for (let i = this.projectiles.length - 1; i >= 0; i--) {
-            const projectile = this.projectiles[i];
-            if (projectile.x < 0 || projectile.x > this.game.config.width || projectile.y < 0 || projectile.y > this.game.config.height) {
-                // Remove the projectile from the array and destroy it
-                this.projectiles.splice(i, 1);
-                projectile.destroy();
-            }
-        }
+        //Check if projectile is out of bounds and destroy it
+
 
         //Update enemies
         trackPlayerAndMove(this, this.enemiesGroup, this.projectiles);

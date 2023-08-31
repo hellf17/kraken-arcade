@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser'
-import { playProjectileSound, createProjectile } from './projectile';
+import { playProjectileSound, createProjectile, Projectile } from './projectile';
 
 const playerType = {
     Type1: 0,
@@ -116,12 +116,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
           
         // Set player velocity based on input
         this.setVelocity(velocityX, velocityY);
-    }     
+    }
+    
+    getProjectileSpeed = () => {
+        // Checks if projectilesGroup is empty, if it is, set the speed to default
+        if (scene.projectilesGroup.getLength() == 0) {
+            return 350;
+        }
+        // If not, check the type of the projectile and set the speed accordingly
+        else {
+            return this.scene.projectile.getData('speed');
+        }
+    };
 
     playerAttacks (scene) {
-        // Set velocity for the projectile
-        const projectileSpeed = 350; // Can be adjusted
-
         if (this.keys.ulti.isDown) {
             if (!this.isPlayerAttacking && this.isPlayerUltimateReady) {
                 this.isPlayerAttacking = true;
@@ -152,7 +160,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 }); */
             }
         }
-        
+
         if (this.fireRateType == 0) {
             if (this.pointer.getDuration() <= 70 && this.pointer.getDuration() >= 50 && !this.isPlayerAttacking){
                 this.isPlayerAttacking = true;
@@ -169,8 +177,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 const normalizedDirectionY = directionY / length;
                            
                 // Creates projectiles and set velocity for the projectile using the normalized direction
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y); // create projectile
-                projectile.setVelocity(projectileSpeed * normalizedDirectionX, projectileSpeed * normalizedDirectionY);
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectile.type); // create projectile
+                projectile.setVelocity(getProjectileSpeed() * normalizedDirectionX, getProjectileSpeed() * normalizedDirectionY);
 
                 // Play projectile sound
                 playProjectileSound()
@@ -199,7 +207,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             
             // Creates projectiles and set velocity for the projectile using the normalized direction
             const projectile = createProjectile(scene, scene.player.x, scene.player.y); // create projectile
-            projectile.setVelocity(projectileSpeed * normalizedDirectionX, projectileSpeed * normalizedDirectionY);
+            projectile.anims.play(('projectile' + projectile.type), true);
+            projectile.setVelocity(projectile.speed * normalizedDirectionX, projectile.speed * normalizedDirectionY);
 
             // Play projectile sound
             playProjectileSound()
@@ -274,4 +283,4 @@ const createAnimations = (scene) => {
 
 
 
-export { createPlayer, loadPlayer, Player };
+export { playerType, createPlayer, loadPlayer, Player };
