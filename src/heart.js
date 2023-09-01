@@ -10,22 +10,22 @@ const loadHearts = (scene) => {
     scene.load.spritesheet(
         'heartRed',
         'src/assets/images/spritesheets/UI/heart_red_spritesheet.png',
-        { frameWidth: 110, frameHeight: 100, spacing: 2 });
+        { frameWidth: 91, frameHeight: 100, spacing: 19 });
     
     scene.load.spritesheet(
        'heartBlue',
         'src/assets/images/spritesheets/UI/heart_blue_spritesheet.png',
-        { frameWidth: 110, frameHeight: 100, spacing: 2 });
+        { frameWidth: 91, frameHeight: 100, spacing: 19 });
     
     scene.load.spritesheet(
         'heartGreen',
         'src/assets/images/spritesheets/UI/heart_green_spritesheet.png',
-        { frameWidth: 110, frameHeight: 100, spacing: 2 });
+        { frameWidth: 91, frameHeight: 100, spacing: 19 });
         
     scene.load.spritesheet(
         'heartTransparent',
         'src/assets/images/spritesheets/UI/heart_transparent_spritesheet.png',
-        { frameWidth: 110, frameHeight: 100, spacing: 2 });
+        { frameWidth: 91, frameHeight: 100, spacing: 19 });
 };
 
 const createHeartAnimation = (scene) => {

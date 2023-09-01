@@ -1,43 +1,71 @@
 //Projectile types
 const projectileType = {
-    Type1: 'Type1',
-    Type2: 'Type2',
-    Type3: 'Type3',
-}
+    Type1: '0'
+};
 
-// Create projectile
-const createProjectile = (scene, playerX, playerY, type = projectileType.Type1) => {
-    const projectile = new Projectile (scene, playerX, playerY, ('projectile ' + type));
-    projectile.setScale(0.25);
-    projectile.setCollideWorldBounds(false);
+// Load projectile image for different types
+const loadProjectiles = (scene) => {
+
+    scene.load.spritesheet('projectile0', 'src/assets/images/spritesheets/projectiles/default_projectile.png', {
+        frameWidth: 81,
+        frameHeight: 125,
+        spacing: 29
+    });
+};
+
+// Create projectile - called from the player.js file
+const createProjectile = (scene, playerX, playerY, type = 0) => {
+    // Debug point: Check if this function is being called correctly
+    console.log('Creating projectile with type:', type);
+
+    const projectile = new Projectile(scene, playerX, playerY, ('projectile ' + type));
 
     projectile.setData('type', projectile.type)
     projectile.setData('damage', projectile.damage);
     projectile.setData('speed', projectile.speed);
 
     scene.projectilesGroup.add(projectile);
-    createAnimations(scene, type);
 
     return projectile;
 };
 
-// Load projectile image
-const loadProjectiles = (scene) => {
-    scene.load.spritesheet('projectile', 'src/assets/images/spritesheets/projectiles/default_projectile.png', {
-        frameWidth: 110,
-        frameHeight: 125,
-        spacing: 29
-    })
-    ;
+// Create projectile animations for all types
+const createAnimations = (scene) => {
+    for (const type in projectileType) {
+        const animationKey = 'projectile' + projectileType.Type1;
+        console.log('animationkey:', animationKey);
+
+        const hitAnimationKey = 'projectileHit' + projectileType.Type1;
+        console.log('hit key', hitAnimationKey);
+
+
+        scene.anims.create({
+            key: animationKey,
+            frames: scene.anims.generateFrameNames(animationKey, { start: 0, end: 10 }),
+            frameRate: 11,
+            repeat: -1
+        });
+
+        scene.anims.create({
+            key: hitAnimationKey,
+            frames: scene.anims.generateFrameNames(hitAnimationKey, { start: 11, end: 15 }),
+            frameRate: 5,
+            repeat: 0
+        });
+    }
 };
 
-const createAnimations = (scene, type) => {
-    scene.anims.create({
-        key: ('projectile' + type),
-        frames: scene.anims.generateFrameNames(('projectile' + type), { start: 0, end: 15 }),
-        frameRate: 16,
-        repeat: -1
-    });
+// Play projectile animation
+const playProjectileAnimation = (projectile, type) => {
+    console.log('Playing animation for:', type);
+    const animationKey = 'projectile' + type;
+    const hitAnimationKey = 'projectileHit' + type;
+
+    if (projectile.isHit) {
+        projectile.anims.play(hitAnimationKey);
+    } else {
+        projectile.anims.play(animationKey, true);
+    }
 };
 
 // Load and export projectile sound
@@ -62,15 +90,18 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         scene.physics.world.enable(this);
-        this.setScale(0.25);
+        this.setCollideWorldBounds(false);
+        this.setScale(0.15);
+
+        this.isHit = false;
 
         switch (type) { // Set projectile stats based on type
-            case playerType.Type1:
+            case projectileType.Type1:
                 this.damage = 1;
                 this.speed = 350
                 this.setBounce(1);
                 break;
-            case playerType.Type2:
+            case projectileType.Type2:
                 this.damage = 1;
                 this.speed = 350;
                 this.setBounce(1.5);
@@ -91,4 +122,4 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
-export { projectileType, createProjectile, loadProjectiles, loadProjectileSound, createProjectileSound, playProjectileSound, Projectile };
+export { projectileType, createProjectile, loadProjectiles, createAnimations, playProjectileAnimation, loadProjectileSound, createProjectileSound, playProjectileSound, Projectile };

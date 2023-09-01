@@ -1,23 +1,43 @@
 import * as Phaser from 'phaser'
-import { playProjectileSound, createProjectile, Projectile } from './projectile';
+import { playProjectileAnimation, playProjectileSound, createProjectile, Projectile, projectileType } from './projectile';
 
 const playerType = {
     Type1: 0,
     Type2: 1
 };
 
-// Load player spritesheet
-const loadPlayer = (scene) => {
+//Load player spritesheet
+const loadPlayer = (scene, type) => {
     scene.load.spritesheet(
-        'player',
+        'player' + type,
         'src/assets/images/spritesheets/kraken-player/kraken1-idle-sheet.png',
         { frameWidth: 150, frameHeight: 150, spacing: 33 }
     );
 };
 
+const createPlayer = (scene, screenX, screenY, type) => {
+    const player = new Player(scene, screenX, screenY, type);
+    createAnimations(scene, type);
+
+    // Add a property to the player to store its original facing direction
+    player.originalFacing = 1; // 1 for right, -1 for left
+
+    return player;
+};
+
+const createAnimations = (scene, type) => {
+    scene.anims.create({
+        key: 'player' + type,
+        frames: scene.anims.generateFrameNames('player' + type, { start: 0, end: 9 }),
+        frameRate: 10,
+        repeat: -1,
+        yoyo: true
+    });
+};
+
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type) {
-        super(scene, x, y, 'player');
+        super(scene, x, y, 'player' + type);
         scene.add.existing(this);
         scene.physics.add.existing(this);
         scene.physics.world.enable(this);
@@ -118,14 +138,15 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setVelocity(velocityX, velocityY);
     }
     
-    getProjectileSpeed = () => {
+    getProjectileSpeed = () => { //need to adjust, not working properly
         // Checks if projectilesGroup is empty, if it is, set the speed to default
-        if (scene.projectilesGroup.getLength() == 0) {
+        if (this.scene.projectilesGroup.getLength() === 0) {
             return 350;
         }
-        // If not, check the type of the projectile and set the speed accordingly
+        // If not, check the type of the first projectile in the group and set the speed accordingly
         else {
-            return this.scene.projectile.getData('speed');
+            const firstProjectile = this.scene.projectilesGroup.getChildren()[0];
+            return firstProjectile.getData('speed');
         }
     };
 
@@ -167,26 +188,29 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 const mouseX = scene.input.activePointer.x;
                 const mouseY = scene.input.activePointer.y;
                 
-                // Calculate direction vector
+                //Calculate direction vector
                 const directionX = mouseX - scene.player.x;
                 const directionY = mouseY - scene.player.y;
                 
-                // Normalize the direction vector
+                //Normalize the direction vector
                 const length = Math.sqrt(directionX * directionX + directionY * directionY);
                 const normalizedDirectionX = directionX / length;
                 const normalizedDirectionY = directionY / length;
                            
-                // Creates projectiles and set velocity for the projectile using the normalized direction
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectile.type); // create projectile
-                projectile.setVelocity(getProjectileSpeed() * normalizedDirectionX, getProjectileSpeed() * normalizedDirectionY);
+                //Creates projectiles and set velocity for the projectile using the normalized direction
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType); // create projectile
+                projectile.setVelocity(350 * normalizedDirectionX, 350 * normalizedDirectionY);
 
-                // Play projectile sound
+                //Animates the projectile
+                playProjectileAnimation(projectile, projectile.type);
+
+                //Play projectile sound
                 playProjectileSound()
 
-                // Add projectile to the scene
-                scene.projectiles.push(projectile)
+                //Add projectile to the projectiles group
+                scene.projectilesGroup.add(projectile)
 
-                // Reset player to attack again
+                //Reset player to attack again
                 this.isPlayerAttacking = false;
             }}
         
@@ -196,25 +220,27 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             const mouseX = scene.input.activePointer.x;
             const mouseY = scene.input.activePointer.y;
             
-            // Calculate direction vector
+            //Calculate direction vector
             const directionX = mouseX - scene.player.x;
             const directionY = mouseY - scene.player.y;
             
-            // Normalize the direction vector
+            //Normalize the direction vector
             const length = Math.sqrt(directionX * directionX + directionY * directionY);
             const normalizedDirectionX = directionX / length;
             const normalizedDirectionY = directionY / length;
             
             // Creates projectiles and set velocity for the projectile using the normalized direction
-            const projectile = createProjectile(scene, scene.player.x, scene.player.y); // create projectile
-            projectile.anims.play(('projectile' + projectile.type), true);
-            projectile.setVelocity(projectile.speed * normalizedDirectionX, projectile.speed * normalizedDirectionY);
+            const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType); // create projectile
+            projectile.setVelocity(this.getProjectileSpeed() * normalizedDirectionX, this.getProjectileSpeed() * normalizedDirectionY);
 
-            // Play projectile sound
+            //Animates the projectile
+            playProjectileAnimation(projectile, projectile.type);
+
+            //Play projectile sound
             playProjectileSound()
 
-            // Add projectile to the scene
-            scene.projectiles.push(projectile)
+            //Add projectile to the projectiles group
+            scene.projectilesGroup.add(projectile)
 
             //Sets a timer to reset the player to attack again
             scene.time.delayedCall(125, () => { // 125ms delay for the attack animation
@@ -260,26 +286,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 }
-
-const createPlayer = (scene, screenX, screenY, type) => {
-    const player = new Player(scene, screenX, screenY, type);
-    createAnimations(scene);
-
-    // Add a property to the player to store its original facing direction
-    player.originalFacing = 1; // 1 for right, -1 for left
-
-    return player;
-};
-
-const createAnimations = (scene) => {
-    scene.anims.create({
-        key: 'player',
-        frames: scene.anims.generateFrameNames('player', { start: 0, end: 9 }),
-        frameRate: 10,
-        repeat: -1,
-        yoyo: true
-    });
-};
 
 
 

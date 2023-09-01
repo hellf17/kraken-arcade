@@ -1,11 +1,8 @@
 import * as Phaser from 'phaser';
 import { playerType ,createPlayer, loadPlayer, Player } from './player';
-import { projectileType,loadProjectiles, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
+import { projectileType,loadProjectiles, createAnimations, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
-improt
-
-
 
 export default class Game extends Phaser.Scene
 {
@@ -14,7 +11,7 @@ export default class Game extends Phaser.Scene
         super('game')
 
         //Initialize player variables
-        this.playerType = this.playerType(Type1); // Initial player type - 1 for Kraken, 2 for Mortis (maybe add more later)
+        this.playerType = 0; // Initial player type - 0 for Kraken, 1 for Mortis (maybe add more later)
 
         //Initialize enemies variables
         this.maxEnemiesOnScreen = 5; // Initial maximum number of enemies on the screen
@@ -22,7 +19,7 @@ export default class Game extends Phaser.Scene
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
 
         //Initialize projectile variables
-        this.projectileType = projectileType(Type1); // Default projectile type - can change with buffs/debuffs
+        this.projectileType = 0; // Default projectile type - can change with buffs/debuffs
 
         //Initialize heart variables
         this.heartSpawnInterval = 30000; // Initial interval for spawning hearts
@@ -39,8 +36,8 @@ export default class Game extends Phaser.Scene
     preload (){
         this.load.image('background', 'src/assets/images/backgrounds/background1.png')
         this.load.audio('backgroundSound', 'src/assets/audio/background.mp3')
-        loadPlayer(this)
-        loadProjectiles(this)
+        loadPlayer(this, this.playerType)
+        loadProjectiles(this, this.projectileType)
         loadProjectileSound(this)
         loadEnemies(this)
         loadHearts(this)
@@ -100,8 +97,10 @@ export default class Game extends Phaser.Scene
         //Create hearts group and set collisions with the player
         this.heartGameGroup = this.physics.add.group();
         this.physics.add.collider(this.player, this.heartGameGroup, this.handlePlayerHeartCollision, null, this);
-                
 
+        //Create the animations for the projectiles
+        createAnimations(this);
+                
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
             fontFamily: 'Arial',
@@ -166,7 +165,9 @@ export default class Game extends Phaser.Scene
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                     // Enemy is hit by projectile
                     enemy.receiveDamage(projectile.damage); 
+                    projectile.isHit = true;
                     projectile.destroy();
+
 
                     // Check if enemy is dead and add XP to player
                     if (enemy.hitpoints <= 0) {
@@ -205,7 +206,7 @@ export default class Game extends Phaser.Scene
 
 
         //Update enemies
-        trackPlayerAndMove(this, this.enemiesGroup, this.projectiles);
+        trackPlayerAndMove(this, this.enemiesGroup, this.projectilesGroup);
 
         //Call the spawnEnemy function to potentially spawn new enemies
         spawnEnemy(this, this.time.now);
