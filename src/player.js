@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser'
-import { playProjectileAnimation, playProjectileSound, createProjectile, Projectile, projectileType } from './projectile';
+import { playProjectileAnimation, playProjectileSound, createProjectile, Projectile } from './projectile';
 
 const playerType = {
     Type1: 0,
@@ -47,10 +47,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.isPlayerHit = false;
         this.isPlayerInvencible = false;
         this.isPlayerUltimateReady = false;
-        this.fireRateType = 0; // 0 is the fire rate for the normal shot, 1 for automatic shot
+        this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
 
-        this.xpTracker = 0; // need to implent the XP incrementation with the timeSurvived
+        this.xpTracker = 0;
         this.timeSurvived = 0;
+        this.enemyKills = 0;
         
         this.setCollideWorldBounds(true);
         this.setDepth(3);
@@ -76,9 +77,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.shield = 0;
                 break;
         }
-
-        scene.physics.world.add(this);
-
     }
 
     setupKeys (scene){
@@ -104,17 +102,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.timeSurvived += elapsedTime;
             this.lastTimeSurvivedUpdate = currentTime;
             
-            if (this.timeSurvived >= 10000 && this.timeSurvived - elapsedTime < 10000) {
-                this.xpTracker += 10;
-            } else if (this.timeSurvived > 10000) {
-                const remainingTime = this.timeSurvived - 10000;
-                const additionalXP = Math.floor(remainingTime / 10000) * 10;
-                this.xpTracker += additionalXP;
+            // Calculate the number of additional XP the player should earn
+            const additionalXP = Math.floor(this.timeSurvived / 10000);
+    
+            // Check if the player has earned more XP
+            if (additionalXP > this.xpTracker) {
+                this.xpTracker = additionalXP;
             }
         }
-    }
+    }    
 
-    movePlayer (scene, multiveloc = 1) {    
+    movePlayer (multiveloc = 1) {    
         // Player movements
         const baseVeloc = 150;
         let velocityX = 0;
@@ -137,18 +135,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // Set player velocity based on input
         this.setVelocity(velocityX, velocityY);
     }
-    
-    getProjectileSpeed = () => { //need to adjust, not working properly
-        // Checks if projectilesGroup is empty, if it is, set the speed to default
-        if (this.scene.projectilesGroup.getLength() === 0) {
-            return 350;
-        }
-        // If not, check the type of the first projectile in the group and set the speed accordingly
-        else {
-            const firstProjectile = this.scene.projectilesGroup.getChildren()[0];
-            return firstProjectile.getData('speed');
-        }
-    };
 
     playerAttacks (scene) {
         if (this.keys.ulti.isDown) {
@@ -185,21 +171,26 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.fireRateType == 0) {
             if (this.pointer.getDuration() <= 70 && this.pointer.getDuration() >= 50 && !this.isPlayerAttacking){
                 this.isPlayerAttacking = true;
-                const mouseX = scene.input.activePointer.x;
-                const mouseY = scene.input.activePointer.y;
-                
-                //Calculate direction vector
-                const directionX = mouseX - scene.player.x;
-                const directionY = mouseY - scene.player.y;
-                
-                //Normalize the direction vector
-                const length = Math.sqrt(directionX * directionX + directionY * directionY);
-                const normalizedDirectionX = directionX / length;
-                const normalizedDirectionY = directionY / length;
                            
-                //Creates projectiles and set velocity for the projectile using the normalized direction
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType); // create projectile
-                projectile.setVelocity(350 * normalizedDirectionX, 350 * normalizedDirectionY);
+                //Creates projectiles and adds them to the projectiles group
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType);
+
+                //Animates the projectile
+                playProjectileAnimation(projectile, scene.projectileType);
+
+                //Play projectile sound
+                playProjectileSound()
+
+                //Reset player to attack again
+                this.isPlayerAttacking = false;
+            }}
+        
+        else if (this.fireRateType == 1) {
+            if (!this.isPlayerAttacking && scene.input.activePointer.leftButtonDown()) {
+                this.isPlayerAttacking = true;
+            
+                // Creates projectiles and adds them to the projectiles group
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType);
 
                 //Animates the projectile
                 playProjectileAnimation(projectile, projectile.type);
@@ -207,44 +198,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 //Play projectile sound
                 playProjectileSound()
 
-                //Add projectile to the projectiles group
-                scene.projectilesGroup.add(projectile)
-
-                //Reset player to attack again
-                this.isPlayerAttacking = false;
-            }}
-        
-        else if (this.fireRateType == 1) {
-           if (!this.isPlayerAttacking && scene.input.activePointer.leftButtonDown()) {
-            this.isPlayerAttacking = true;
-            const mouseX = scene.input.activePointer.x;
-            const mouseY = scene.input.activePointer.y;
-            
-            //Calculate direction vector
-            const directionX = mouseX - scene.player.x;
-            const directionY = mouseY - scene.player.y;
-            
-            //Normalize the direction vector
-            const length = Math.sqrt(directionX * directionX + directionY * directionY);
-            const normalizedDirectionX = directionX / length;
-            const normalizedDirectionY = directionY / length;
-            
-            // Creates projectiles and set velocity for the projectile using the normalized direction
-            const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType); // create projectile
-            projectile.setVelocity(this.getProjectileSpeed() * normalizedDirectionX, this.getProjectileSpeed() * normalizedDirectionY);
-
-            //Animates the projectile
-            playProjectileAnimation(projectile, projectile.type);
-
-            //Play projectile sound
-            playProjectileSound()
-
-            //Add projectile to the projectiles group
-            scene.projectilesGroup.add(projectile)
-
-            //Sets a timer to reset the player to attack again
-            scene.time.delayedCall(125, () => { // 125ms delay for the attack animation
-                this.isPlayerAttacking = false;});
+                //Sets a timer to reset the player to attack again
+                scene.time.delayedCall(125, () => { // 125ms delay for the attack animation
+                    this.isPlayerAttacking = false;});
             }
         }
     }
@@ -266,6 +222,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update() {   
+        this.timeTracker();
+
         // Calculate angle to cursor
         const angleToCursor = Phaser.Math.Angle.Between(this.x, this.y, this.scene.input.activePointer.x, this.scene.input.activePointer.y);
     
@@ -284,6 +242,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.originalFacingX = 1;
             }
         }
+
+        //Update ultimate attack to ready if the player has enough kills and time survived
+        
     }
 }
 

@@ -91,11 +91,7 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
                 this.maxHitpointsIncrease = 1;
                 this.type = heartType.Type3;
                 break;
-        }
-
-        // Register this enemy instance with the physics world
-        this.scene.physics.world.add(this);
-        
+        }        
     }
 }
 

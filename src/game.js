@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { playerType ,createPlayer, loadPlayer, Player } from './player';
-import { projectileType,loadProjectiles, createAnimations, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
+import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 
@@ -22,7 +22,7 @@ export default class Game extends Phaser.Scene
         this.projectileType = 0; // Default projectile type - can change with buffs/debuffs
 
         //Initialize heart variables
-        this.heartSpawnInterval = 30000; // Initial interval for spawning hearts
+        this.heartSpawnInterval = 10000; // Initial interval for spawning hearts
         this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen
         this.lastHeartSpawnTime = 0; // Initialize to 0
 
@@ -37,7 +37,7 @@ export default class Game extends Phaser.Scene
         this.load.image('background', 'src/assets/images/backgrounds/background1.png')
         this.load.audio('backgroundSound', 'src/assets/audio/background.mp3')
         loadPlayer(this, this.playerType)
-        loadProjectiles(this, this.projectileType)
+        loadProjectiles(this)
         loadProjectileSound(this)
         loadEnemies(this)
         loadHearts(this)
@@ -75,16 +75,17 @@ export default class Game extends Phaser.Scene
         //Create player and animates it
         this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType)
         this.player.anims.play(('player' + this.playerType), true)
-        this.player.setCollideWorldBounds(true);
                         
-        //Create the projectile groups and sound
+        //Create the projectile groups, animation and sound
         this.projectilesGroup = this.physics.add.group();
         createProjectileSound(this);
+        createProjectileAnimation(this);
 
+        
         //Create enemies group and set collisions with the player and projectiles
         this.enemiesGroup = this.physics.add.group();
         this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
-        this.physics.add.collider(this.enemiesGroup, this.projectiles, this.handleProjectileEnemyCollision, null, this);
+        this.physics.add.collider(this.enemiesGroup, this.projectilesGroup, this.handleProjectileEnemyCollision, null, this);
 
         //Create player input
         this.player.setupKeys(this);
@@ -98,8 +99,7 @@ export default class Game extends Phaser.Scene
         this.heartGameGroup = this.physics.add.group();
         this.physics.add.collider(this.player, this.heartGameGroup, this.handlePlayerHeartCollision, null, this);
 
-        //Create the animations for the projectiles
-        createAnimations(this);
+
                 
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
@@ -164,14 +164,14 @@ export default class Game extends Phaser.Scene
                 const projectileBounds = projectile.getBounds();
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                     // Enemy is hit by projectile
-                    enemy.receiveDamage(projectile.damage); 
                     projectile.isHit = true;
+                    enemy.receiveDamage(projectile.damage); 
                     projectile.destroy();
-
 
                     // Check if enemy is dead and add XP to player
                     if (enemy.hitpoints <= 0) {
                         this.player.xpTracker += enemy.xpReward;
+                        this.player.enemyKills += 1;
                     }
                 }
             }
@@ -194,7 +194,7 @@ export default class Game extends Phaser.Scene
         this.timeSurvivedTrackerText.setText('Time Survived: ' + formattedTimeSurvived);
 
         //Player movements
-        this.player.movePlayer(this); // Move player; can pass multiveloc to increase velocity for buffs/debuffs
+        this.player.movePlayer(); // Move player; can pass multiveloc to increase velocity for buffs/debuffs
     
         //Shoot projectile towards mouse pointer
         this.player.playerAttacks(this);
@@ -202,9 +202,6 @@ export default class Game extends Phaser.Scene
         // Update player instance
         this.player.update();
       
-        //Check if projectile is out of bounds and destroy it
-
-
         //Update enemies
         trackPlayerAndMove(this, this.enemiesGroup, this.projectilesGroup);
 

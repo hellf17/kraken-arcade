@@ -1,43 +1,46 @@
-//Projectile types
 const projectileType = {
-    Type1: '0'
+    Type1: 0,
+    Type2: 1,
+    Type3: 2
 };
+
 
 // Load projectile image for different types
 const loadProjectiles = (scene) => {
 
     scene.load.spritesheet('projectile0', 'src/assets/images/spritesheets/projectiles/default_projectile.png', {
-        frameWidth: 81,
+        frameWidth: 110,
         frameHeight: 125,
-        spacing: 29
     });
+
 };
 
 // Create projectile - called from the player.js file
 const createProjectile = (scene, playerX, playerY, type = 0) => {
-    // Debug point: Check if this function is being called correctly
-    console.log('Creating projectile with type:', type);
+    const projectile = new Projectile(scene, playerX, playerY, type);
 
-    const projectile = new Projectile(scene, playerX, playerY, ('projectile ' + type));
-
-    projectile.setData('type', projectile.type)
-    projectile.setData('damage', projectile.damage);
-    projectile.setData('speed', projectile.speed);
-
+    // Add projectile to the projectiles group
     scene.projectilesGroup.add(projectile);
+
+    // Set velocity based on projectile speed
+    const projectileSpeed = projectile.getSpeed();
+    const mouseX = scene.input.activePointer.x;
+    const mouseY = scene.input.activePointer.y;
+    const directionX = mouseX - playerX;
+    const directionY = mouseY - playerY;
+    const length = Math.sqrt(directionX * directionX + directionY * directionY);
+    const normalizedDirectionX = directionX / length;
+    const normalizedDirectionY = directionY / length;
+
+    projectile.setVelocity(projectileSpeed * normalizedDirectionX, projectileSpeed * normalizedDirectionY);
 
     return projectile;
 };
 
 // Create projectile animations for all types
-const createAnimations = (scene) => {
-    for (const type in projectileType) {
-        const animationKey = 'projectile' + projectileType.Type1;
-        console.log('animationkey:', animationKey);
-
-        const hitAnimationKey = 'projectileHit' + projectileType.Type1;
-        console.log('hit key', hitAnimationKey);
-
+const createProjectileAnimation = (scene) => {
+        const animationKey = 'projectile' + 0;
+        const hitAnimationKey = 'projectileHit' + 0;
 
         scene.anims.create({
             key: animationKey,
@@ -48,16 +51,14 @@ const createAnimations = (scene) => {
 
         scene.anims.create({
             key: hitAnimationKey,
-            frames: scene.anims.generateFrameNames(hitAnimationKey, { start: 11, end: 15 }),
+            frames: scene.anims.generateFrameNames(animationKey, { start: 11, end: 15 }),
             frameRate: 5,
             repeat: 0
         });
-    }
-};
+}
 
-// Play projectile animation
+//Play projectile animation
 const playProjectileAnimation = (projectile, type) => {
-    console.log('Playing animation for:', type);
     const animationKey = 'projectile' + type;
     const hitAnimationKey = 'projectileHit' + type;
 
@@ -68,7 +69,7 @@ const playProjectileAnimation = (projectile, type) => {
     }
 };
 
-// Load and export projectile sound
+//Load and export projectile sound
 let projectileSound;
 
 const loadProjectileSound = (scene) => {
@@ -89,37 +90,40 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'projectile' + type);
         scene.add.existing(this);
         scene.physics.add.existing(this);
-        scene.physics.world.enable(this);
         this.setCollideWorldBounds(false);
-        this.setScale(0.15);
+        this.setScale(0.2);
+        this.setDepth(0);
 
+        this.type = type;
         this.isHit = false;
 
         switch (type) { // Set projectile stats based on type
             case projectileType.Type1:
                 this.damage = 1;
-                this.speed = 350
-                this.setBounce(1);
+                this.speed = 350;
+                this.setBounce(0);
                 break;
             case projectileType.Type2:
                 this.damage = 1;
                 this.speed = 350;
-                this.setBounce(1.5);
+                this.setBounce(0.8);
                 break;
         }
-
-        this.scene.physics.world.add(this);
     }
 
-    update() {
-        //Check if projectiles are out of screen bounds and remove them
-        for (let i = scene.projectilesGroup.getChildren().length - 1; i >= 0; i--) {
-            const projectile = scene.projectilesGroup.getChildren()[i];
-            if (projectile.x < 0 || projectile.x > scene.game.config.width || projectile.y < 0 || projectile.y > scene.game.config.height) {t
+    getSpeed() {
+        return this.speed;
+    }
+
+    update() {    
+        // Check if projectiles are out of screen bounds and remove them
+        for (let i = this.scene.projectilesGroup.getChildren().length - 1; i >= 0; i--) {
+            const projectile = this.scene.projectilesGroup.getChildren()[i];
+            if (projectile.x < 0 || projectile.x > this.scene.game.config.width || projectile.y < 0 || projectile.y > this.scene.game.config.height) {
                 projectile.destroy();
             }
         }
     }
 }
 
-export { projectileType, createProjectile, loadProjectiles, createAnimations, playProjectileAnimation, loadProjectileSound, createProjectileSound, playProjectileSound, Projectile };
+export { createProjectile, loadProjectiles, createProjectileAnimation, playProjectileAnimation, loadProjectileSound, createProjectileSound, playProjectileSound, Projectile };

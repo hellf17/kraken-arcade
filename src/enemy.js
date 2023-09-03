@@ -16,7 +16,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type) {
         super(scene, x, y, 'enemy' + type);
         scene.add.existing(this);
-        scene.physics.world.enable(this);
+        scene.physics.add.existing(this)
         this.setScale(0.12);
         
 
@@ -43,8 +43,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.dodgeModifier = 1.4;
                 break;
         }
-        // Register this enemy instance with the physics world
-        this.scene.physics.world.add(this);
         
     }
 
