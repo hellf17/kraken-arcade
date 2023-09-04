@@ -3,6 +3,7 @@ import { playerType ,createPlayer, loadPlayer, Player } from './player';
 import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
+import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
 
 export default class Game extends Phaser.Scene
 {
@@ -22,7 +23,7 @@ export default class Game extends Phaser.Scene
         this.projectileType = 0; // Default projectile type - can change with buffs/debuffs
 
         //Initialize heart variables
-        this.heartSpawnInterval = 10000; // Initial interval for spawning hearts
+        this.heartSpawnInterval = 15000; // Initial interval for spawning hearts
         this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen
         this.lastHeartSpawnTime = 0; // Initialize to 0
 
@@ -30,7 +31,9 @@ export default class Game extends Phaser.Scene
         this.buffs = []; // Array to store active buffs
 
         //Initialize debuffs variables
-        this.debuffs = []; // Array to store active debuffs
+        this.debuffSpawnInterval = 5000;
+        this.lastDebuffSpawnTime = 0;
+        this.maxDebuffsOnScreen = 21;
     }
 
     preload (){
@@ -41,8 +44,8 @@ export default class Game extends Phaser.Scene
         loadProjectileSound(this)
         loadEnemies(this)
         loadHearts(this)
-        //loadBuffs(this)
-        //loadDebuffs(this)
+        loadDebuffs(this)
+        //loadBuffs(this
     }
 
     create() {
@@ -75,21 +78,25 @@ export default class Game extends Phaser.Scene
         //Create player and animates it
         this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType)
         this.player.anims.play(('player' + this.playerType), true)
+
+        //Create player input
+        this.player.setupKeys(this);
+        this.player.movePlayer();
                         
         //Create the projectile groups, animation and sound
         this.projectilesGroup = this.physics.add.group();
         createProjectileSound(this);
         createProjectileAnimation(this);
 
-        
         //Create enemies group and set collisions with the player and projectiles
         this.enemiesGroup = this.physics.add.group();
         this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
         this.physics.add.collider(this.enemiesGroup, this.projectilesGroup, this.handleProjectileEnemyCollision, null, this);
 
-        //Create player input
-        this.player.setupKeys(this);
-        this.player.movePlayer();
+        //Create debuffs group and set collisions with the player
+        this.debuffsGroup = this.physics.add.group();
+        createDebuffsAnimation(this);
+        this.physics.add.collider(this.player, this.debuffsGroup, this.handlePlayerDebuffCollision, null, this);
 
         //Create inital UI hearts group
         this.heartsUiGroup = this.physics.add.group();
@@ -210,6 +217,9 @@ export default class Game extends Phaser.Scene
 
         //Call the spawnAndUpdateHearts function to potentially spawn new hearts
         spawnHearts(this, this.time.now);
+
+        //Call the spawnAndUpdateDebuffs function to potentially spawn new debuffs
+        spawnDebuffs(this, this.time.now);
 
         //Handle player dying
         //if (this.player.isAlive === false) {
