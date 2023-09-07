@@ -8,9 +8,9 @@ class EndScene extends Phaser.Scene {
     preload() {
         this.load.image('endScene', './src/assets/images/backgrounds/EndScene.png');
         this.load.spritesheet('share', './src/assets/images/buttons/shareButton.png', { frameWidth: 300, frameHeight: 100 });
-        this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
+        this.load.spritesheet('connect', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('registerScore', './src/assets/images/buttons/registerScoreButton.png', { frameWidth: 300, frameHeight: 100 });
-        this.load.audio('endMenuMusic', './src/assets/audio/EndMenuMusic.mp3');
+        //this.load.audio('endMenuMusic', './src/assets/audio/EndMenuMusic.mp3');
     }
 
     create() {
@@ -31,37 +31,40 @@ class EndScene extends Phaser.Scene {
     endImage.setPosition(screenWidth / 2, screenHeight / 2);
 
     // Background music
-    const music = this.sound.add('endMenuMusic', { loop: true });
-    music.play();
+    //const music = this.sound.add('endMenuMusic', { loop: true });
+    //music.play();
 
     // End Game button
-    const share = this.add.sprite(400, 200, 'share');
+    const share = this.add.sprite(screenWidth / 2, screenHeight / 2 - 200, 'share');
     this.anims.create({
         key: 'share',
         frames: this.anims.generateFrameNumbers('share', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
+    this.anims.play('share', true);
     share.setInteractive(); // Make the button interactive
 
     // Options button
-    const register = this.add.sprite(400, 300, 'registerScoreButton');
+    const register = this.add.sprite(screenWidth / 2, screenHeight / 2 - 350, 'registerScore');
     this.anims.create({
-        key: 'register',
-        frames: this.anims.generateFrameNumbers('register', { start: 0, end: 9 }),
+        key: 'registerScore',
+        frames: this.anims.generateFrameNumbers('registerScore', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
+    this.anims.play('registerScore', true);
     register.setInteractive();
 
     // Connect Wallet button
-    const connectButton = this.add.connect(400, 400, 'connectButton');
+    const connectButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 500, 'connect');
     this.anims.create({
         key: 'connect',
         frames: this.anims.generateFrameNumbers('connect', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
+    this.anims.play('connect', true);
     connectButton.setInteractive();
 
     // Button interactions

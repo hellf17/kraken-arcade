@@ -7,6 +7,8 @@ import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './de
 import StartMenuScene from './Phaser/Scenes/StartMenu';
 import OptionsMenuScene from './Phaser/Scenes/OptionsMenu';
 import EndScene from './Phaser/Scenes/EndScene';
+import PauseMenuScene from './Phaser/Scenes/PauseMenu';
+
 
 
 export default class Game extends Phaser.Scene
@@ -208,7 +210,7 @@ export default class Game extends Phaser.Scene
         this.player.movePlayer(); // Move player; can pass multiveloc to increase velocity for buffs/debuffs
     
         //Shoot projectile towards mouse pointer
-        this.player.playerAttacks(this);
+        this.player.playerControls(this);
 
         // Update player instance
         this.player.update();
@@ -233,7 +235,7 @@ export default class Game extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
-    scene: [StartMenuScene, OptionsMenuScene, Game],
+    scene: [StartMenuScene, Game],
     scale: {
       width: '100%',
       height: '100%',

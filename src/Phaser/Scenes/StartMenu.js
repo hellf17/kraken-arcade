@@ -7,60 +7,87 @@ class StartMenuScene extends Phaser.Scene {
 
     preload() {
         this.load.image('startMenu', './src/assets/images/backgrounds/startMenu.png');
-        this.load.image('startButton', './src/assets/images/buttons/startButton.png');
-        this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png');
-        this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png');
-        this.load.audio('StartMenuMusic', './src/assets/audio/startMenuMusic.mp3');
+        this.load.spritesheet('playButton', './src/assets/images/buttons/playButton.png', {frameWidth: 300, frameHeight: 100});
+        this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png', { frameWidth: 300, frameHeight: 100 });
+        this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
+        //this.load.audio('StartMenuMusic', './src/assets/audio/startMenuMusic.mp3');
     }
 
     create() {
-    // Background image
-    const startMenuImage = this.add.image(0, 0, 'startMenu').setOrigin(0);
+    // Get the width and height of the game config (screen dimensions)
+    const screenWidth = window.innerWidth
+    const screenHeight = window.innerHeight
 
-    //Get the width and height of the current scene
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
+    // Background image; music is the same as the start menu
+    const backgroundImage = this.add.image(0, 0, 'startMenu');
 
-    //Calculate a single scale factor to fit the image proportionally
-    const scale = Math.max(screenWidth / startMenuImage.width, screenHeight / startMenuImage.height);
+    // Calculate a single scale factor to fit the image proportionally
+    const scale = Math.max(screenWidth / backgroundImage.width, screenHeight / backgroundImage.height);
 
-    //Apply the scale factor to resize the background image
-    startMenuImage.setScale(scale);
-    
-    //Position the image at the center
-    startMenuImage.setPosition(screenWidth / 2, screenHeight / 2);
+    // Apply the scale factor to resize the background image
+    backgroundImage.setScale(scale);
+
+    // Position the image at the center of the screen
+    backgroundImage.setPosition(screenWidth / 2, screenHeight / 2);
 
     // Background music
-    const music = this.sound.add('backgroundMusic', { loop: true });
-    music.play();
+    //const music = this.sound.add('backgroundMusic', { loop: true });
+    //music.play();
 
     // Start Game button
-    const startButton = this.add.image(400, 200, 'startButton');
-    startButton.setInteractive(); // Make the button interactive
+    const playButton = this.add.sprite(screenWidth / 2, screenHeight / 2, 'playButton');
+    playButton.setScale(1.2);
+    this.anims.create({
+        key: 'playButton',
+        frames: this.anims.generateFrameNumbers('playButton', { start: 0, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    playButton.anims.play('playButton', true);
+    playButton.setInteractive(); // Make the button interactive
 
     // Options button
-    const optionsButton = this.add.image(400, 300, 'optionsButton');
+    const optionsButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'optionsButton');
+    this.anims.create({
+        key: 'optionsButton',
+        frames: this.anims.generateFrameNumbers('optionsButton', { start: 0, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    optionsButton.anims.play('optionsButton', true);
     optionsButton.setInteractive();
 
     // Connect Wallet button
-    const connectButton = this.add.image(400, 400, 'connectButton');
+    const connectButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 200, 'connectButton');
+    this.anims.create({
+        key: 'connectButton',
+        frames: this.anims.generateFrameNumbers('connectButton', { start: 0, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    connectButton.anims.play('connectButton', true);
     connectButton.setInteractive();
 
     // Button interactions
-    startButton.on('pointerover', () => {
+    playButton.on('pointerover', () => {
         // Highlight the button when the mouse is over it
-        startButton.setScale(1.1);
+        playButton.setScale(1.1);
     });
 
-    startButton.on('pointerout', () => {
+    playButton.on('pointerout', () => {
         // Reset the button's scale when the mouse is out
-        startButton.setScale(1);
+        playButton.setScale(1);
     });
 
-    startButton.on('pointerdown', () => {
+    playButton.on('pointerdown', () => {
         // Handle Start Game button click
-        music.stop();
-        this.scene.start('Game');
+        //music.stop();
+        //Fade out the scene and start the game
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+            this.scene.start('Game');
+            }
+        )
     });
 
     optionsButton.on('pointerover', () => {
@@ -75,7 +102,11 @@ class StartMenuScene extends Phaser.Scene {
 
     optionsButton.on('pointerdown', () => {
         // Handle Options button click
-        this.scene.start('OptionsMenuScene'); // Replace 'OptionsMenuScene' with your options menu scene
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+            this.scene.start('OptionsMenuScene');
+            }
+        )
     });
 
     connectButton.on('pointerover', () => {

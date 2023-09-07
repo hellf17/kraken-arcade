@@ -85,7 +85,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             down: Phaser.Input.Keyboard.KeyCodes.S,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
-            ulti: Phaser.Input.Keyboard.KeyCodes.SPACE
+            ulti: Phaser.Input.Keyboard.KeyCodes.SPACE,
+            pause: Phaser.Input.Keyboard.KeyCodes.ESC
             });
         this.pointer = scene.input.activePointer
     }
@@ -136,7 +137,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setVelocity(velocityX, velocityY);
     }
 
-    playerAttacks (scene) {
+    playerControls (scene) {
+        //Controls the player ultimate attack
         if (this.keys.ulti.isDown) {
             if (!this.isPlayerAttacking && this.isPlayerUltimateReady) {
                 this.isPlayerAttacking = true;
@@ -168,6 +170,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
+        //Controls the player attack
         if (this.fireRateType == 0) {
             if (this.pointer.getDuration() <= 70 && this.pointer.getDuration() >= 50 && !this.isPlayerAttacking){
                 this.isPlayerAttacking = true;
@@ -202,6 +205,12 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 scene.time.delayedCall(125, () => { // 125ms delay for the attack animation
                     this.isPlayerAttacking = false;});
             }
+        }
+
+        //Controls the pause menu
+        if (this.keys.pause.isDown) {
+            this.scene.scene.start('PauseMenuScene');
+            this.scene.scene.pause();
         }
     }
 
