@@ -217,8 +217,15 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     kill(){
         //this.moveState.die();
         //this.animState.die();
+
+        //Capture player screenshot and save it to a variable named playerScreenshot
+        const playerScreenshot = this.scene.cameras.main.snapshot();
+        
         this.isPlayerAlive = false;
-        this.destroy(); 
+        this.destroy();
+        this.scene.player = null;
+        this.scene.backgroundSound.stop();
+        this.scene.start('EndScene');
     }
 
     update() {   

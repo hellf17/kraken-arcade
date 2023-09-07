@@ -1,11 +1,5 @@
-import BootScene from './BootScene.js';
-import TitleScene from './TitleScene.js';
-import GameScene from './GameScene.js';
-import UiScene from './UiScene.js';
+import StartMenuScene from './StartMenu';
+import OptionsMenuScene from './OptionsMenu';
+import EndScene from './EndScene';
 
-export default [
-  BootScene,
-  TitleScene,
-  GameScene,
-  UiScene,
-];
+export default [StartMenuScene, OptionsMenuScene, EndScene];

@@ -4,12 +4,16 @@ import { loadProjectiles, createProjectileAnimation, loadProjectileSound, create
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
+import StartMenuScene from './Phaser/Scenes/StartMenu';
+import OptionsMenuScene from './Phaser/Scenes/OptionsMenu';
+import EndScene from './Phaser/Scenes/EndScene';
+
 
 export default class Game extends Phaser.Scene
 {
     constructor ()
     {
-        super('game')
+        super('Game')
 
         //Initialize player variables
         this.playerType = 0; // Initial player type - 0 for Kraken, 1 for Mortis (maybe add more later)
@@ -229,7 +233,7 @@ export default class Game extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
-    scene: Game,
+    scene: [StartMenuScene, OptionsMenuScene, Game],
     scale: {
       width: '100%',
       height: '100%',
