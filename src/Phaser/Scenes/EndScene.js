@@ -6,7 +6,6 @@ class EndScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('endScene', './src/assets/images/backgrounds/EndScene.png');
         this.load.spritesheet('share', './src/assets/images/buttons/shareButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('connect', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('registerScore', './src/assets/images/buttons/registerScoreButton.png', { frameWidth: 300, frameHeight: 100 });
@@ -14,21 +13,13 @@ class EndScene extends Phaser.Scene {
     }
 
     create() {
-    // Background image
-    const endImage = this.add.image(0, 0, 'endScene').setOrigin(0);
+    // Set the background image from the playerScreenshot.src
+    const backgroundImage = this.add.image(0, 0, 'playerScreenshot');
 
     //Get the width and height of the current scene
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
 
-    //Calculate a single scale factor to fit the image proportionally
-    const scale = Math.max(screenWidth / endImage.width, screenHeight / endImage.height);
-
-    //Apply the scale factor to resize the background image
-    endImage.setScale(scale);
-    
-    //Position the image at the center
-    endImage.setPosition(screenWidth / 2, screenHeight / 2);
 
     // Background music
     //const music = this.sound.add('endMenuMusic', { loop: true });

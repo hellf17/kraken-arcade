@@ -15,6 +15,11 @@ class PauseMenuScene extends Phaser.Scene {
         // Get the width and height of the game config (screen dimensions)
         const screenWidth = window.innerWidth
         const screenHeight = window.innerHeight
+
+        // Create a black background
+        const blackBackground = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.5);
+        blackBackground.setOrigin(0);
+        blackBackground.setDepth(1);
     
         // Start Game button
         const playButton = this.add.sprite(screenWidth / 2, screenHeight / 2, 'playButton');

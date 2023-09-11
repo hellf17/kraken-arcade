@@ -209,8 +209,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //Controls the pause menu
         if (this.keys.pause.isDown) {
-            this.scene.scene.start('PauseMenuScene');
-            this.scene.scene.pause();
+            scene.callPauseMenu();
         }
     }
 
@@ -225,16 +224,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     kill(){
         //this.moveState.die();
-        //this.animState.die();
-
-        //Capture player screenshot and save it to a variable named playerScreenshot
-        const playerScreenshot = this.scene.cameras.main.snapshot();
-        
+        //this.animState.die();       
+     
         this.isPlayerAlive = false;
-        this.destroy();
         this.scene.player = null;
         this.scene.backgroundSound.stop();
-        this.scene.start('EndScene');
+
+        //Capture player screenshot and makes it a texture acessible by the end scene
+        const playerScreenshot = this.scene.renderer.snapshot(
+            this.scene.textures.addBase64('playerScreenshot', playerScreenshot.src)
+        );
+
+        this.scene.stop('Game');
+        this.scene.start('EndScene')
+
     }
 
     update() {   

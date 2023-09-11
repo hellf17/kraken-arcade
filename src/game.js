@@ -137,6 +137,11 @@ export default class Game extends Phaser.Scene
         );
     }
 
+    callPauseMenu() {
+        this.scene.pause();
+        this.scene.launch('PauseMenuScene');
+    }
+
     handlePlayerEnemyCollision (){
         for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
             const enemy = this.enemiesGroup.getChildren()[i];
@@ -235,7 +240,7 @@ export default class Game extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
-    scene: [StartMenuScene, Game],
+    scene: './Phaser/Scenes/Scenes',
     scale: {
       width: '100%',
       height: '100%',
