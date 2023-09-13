@@ -4,10 +4,11 @@ import { loadProjectiles, createProjectileAnimation, loadProjectileSound, create
 import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
-import StartMenuScene from './Phaser/Scenes/StartMenu';
+import StartMenu from './Phaser/Scenes/StartMenu';
+import PauseMenu from './Phaser/Scenes/PauseMenu';
 import OptionsMenuScene from './Phaser/Scenes/OptionsMenu';
-import EndScene from './Phaser/Scenes/EndScene';
-import PauseMenuScene from './Phaser/Scenes/PauseMenu';
+import EndScene from './Phaser/Scenes/EndMenu';
+
 
 
 
@@ -136,13 +137,8 @@ export default class Game extends Phaser.Scene
             }
         );
     }
-
-    callPauseMenu() {
-        this.scene.pause();
-        this.scene.launch('PauseMenuScene');
-    }
-
-    handlePlayerEnemyCollision (){
+    
+    handlePlayerEnemyCollision () {
         for (let i = this.enemiesGroup.getChildren().length - 1; i >= 0; i--) {
             const enemy = this.enemiesGroup.getChildren()[i];
             const enemyDamage = enemy.getData('damage');
@@ -233,14 +229,24 @@ export default class Game extends Phaser.Scene
         spawnDebuffs(this, this.time.now);
 
         //Handle player dying
-        //if (this.player.isAlive === false) {
-        //this.scene.start('game-over');}
+/*         if (this.player.isAlive === false) {
+            //Takes screen shot of the game
+            const gameOverScreenshot = this.scene.renderer.snapshot(
+                this.textures.addBase64('gameOverScreenshot', gameOverScreenshot.src)
+            );
+
+            //Stops the background music
+            this.sound.stopAll();
+
+            //Passes the screenshot to the game over scene and ends the game
+            this.scene.start('EndScene', { gameOverScreenshot });
+        } */
     }
 }
 
 const config = {
     type: Phaser.AUTO,
-    scene: './Phaser/Scenes/Scenes',
+    scene: [StartMenu, PauseMenu, Game],
     scale: {
       width: '100%',
       height: '100%',
@@ -252,7 +258,8 @@ const config = {
           debug: false,
           gravity: {y: 0}
         }
-    }
+    },
+    callbacks: { postBoot: (game) => { game.scene.dump() } }
 }
 
 const game = new Phaser.Game(config)

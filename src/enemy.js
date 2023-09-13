@@ -17,7 +17,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'enemy' + type);
         scene.add.existing(this);
         scene.physics.add.existing(this)
-        this.setScale(0.12);
         
 
         switch (type) {
@@ -27,6 +26,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 10
                 this.damage = 1;
                 this.dodgeModifier = 1;
+                this.setScale(0.12);
                 break;
             case EnemyType.Type2:
                 this.hitpoints = 5;
@@ -34,6 +34,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 15;
                 this.damage = 1;
                 this.dodgeModifier = 1.2;
+                this.setScale(0.45);
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;
@@ -41,6 +42,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 25;
                 this.damage = 2;
                 this.dodgeModifier = 1.4;
+                this.setScale(0.12);
                 break;
         }
         

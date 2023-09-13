@@ -1,8 +1,8 @@
-import 'phaser';
+import * as Phaser from 'phaser';
 
-class EndScene extends Phaser.Scene {
+class EndMenu extends Phaser.Scene {
     constructor() {
-        super({ key: 'EndScene' });
+        super('EndMenu');
     }
 
     preload() {
@@ -13,13 +13,12 @@ class EndScene extends Phaser.Scene {
     }
 
     create() {
-    // Set the background image from the playerScreenshot.src
-    const backgroundImage = this.add.image(0, 0, 'playerScreenshot');
-
     //Get the width and height of the current scene
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
 
+    // Set the background image from the playerScreenshot.src
+    const backgroundImage = this.add.image(0, 0, 'gameOverScreenshot');
 
     // Background music
     //const music = this.sound.add('endMenuMusic', { loop: true });
@@ -104,4 +103,4 @@ class EndScene extends Phaser.Scene {
     }
 }
 
-export default EndScene;
+export default EndMenu;

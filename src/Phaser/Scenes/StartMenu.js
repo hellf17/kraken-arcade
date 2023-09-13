@@ -1,8 +1,8 @@
-import 'phaser';
+import * as Phaser from 'phaser';
 
-class StartMenuScene extends Phaser.Scene {
+class StartMenu extends Phaser.Scene {
     constructor() {
-        super({ key: 'StartMenuScene' });
+        super({key: 'StartMenu'});
     }
 
     preload() {
@@ -126,4 +126,4 @@ class StartMenuScene extends Phaser.Scene {
     }
 }
 
-export default StartMenuScene;
+export default StartMenu;
