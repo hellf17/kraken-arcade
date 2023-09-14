@@ -227,7 +227,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //this.moveState.die();
         //this.animState.die();       
         this.isPlayerAlive = false;
-        this.destroy;
+        this.scene.scene.pause();
+        this.scene.scene.start('EndMenu');
     }
 
     update() {   
