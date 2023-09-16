@@ -7,9 +7,47 @@ const EnemyType = {
 };
 
 const loadEnemies = (scene) => {
-    scene.load.image('enemy0', 'src/assets/images/still-image/enemies/enemy1.png');
-    scene.load.image('enemy1', 'src/assets/images/still-image/enemies/enemy2.png');
-    scene.load.image('enemy2', 'src/assets/images/still-image/enemies/enemy3.png');
+    scene.load.image('enemy0', 'src/assets/images/still-image/enemies/enemy0.png');
+    scene.load.image('enemy2', 'src/assets/images/still-image/enemies/enemy2.png');
+
+    scene.load.spritesheet(
+        'enemy1',
+        'src/assets/images/spritesheets/enemies/enemy1.png',
+        { frameWidth: 150, frameHeight: 75});
+
+    
+};
+
+const createEnemiesAnimations = (scene) => {
+    scene.anims.create({
+        key: 'enemy0',
+        frames: scene.anims.generateFrameNames('enemy0', { start: 0, end: 1 }),
+        frameRate: 2,
+        repeat: -1,
+        yoyo: true,
+        loop: true
+        });
+
+    scene.anims.create({
+        key: 'enemy1',
+        frames: scene.anims.generateFrameNames('enemy1', { start: 0, end: 1 }),
+        frameRate: 2,
+        repeat: -1,
+        yoyo: true,
+        loop: true
+        });
+    
+    scene.anims.create({
+        key: 'enemy2',
+        frames: scene.anims.generateFrameNames('enemy2', { start: 0, end: 1 }),
+        frameRate: 2,
+        repeat: -1,
+        yoyo: true,
+        loop: true
+        });
+
+    
+
 };
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
@@ -34,7 +72,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 15;
                 this.damage = 1;
                 this.dodgeModifier = 1.2;
-                this.setScale(0.45);
+                this.setScale(1);
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;
@@ -92,6 +130,7 @@ const spawnEnemy = (scene, currentTime) => {
 
         const enemyType = Phaser.Math.Between(EnemyType.Type1, EnemyType.Type3);
         const enemy = new Enemy(scene, spawnX, spawnY, enemyType);
+        enemy.anims.play('enemy' + enemyType, true);
         enemy.setData('speed', enemy.speed);
         enemy.setData('damage', enemy.damage);
         enemy.setData('dodgeModifier', enemy.dodgeModifier);
@@ -151,11 +190,4 @@ const trackPlayerAndMove = (scene, enemiesGroup, projectilesGroup) => {
     });
 };
 
-export { loadEnemies, spawnEnemy, trackPlayerAndMove };
-
-
-//const loadEnemies = (scene: Phaser.Scene): void => {
-//Load enemy images and animations
-//    scene.load.spritesheet('enemy-' + EnemyType.Type1, 'assets/enemies/enemy-type1.png', { frameWidth: 32, frameHeight: 32 });
-//    scene.load.spritesheet('enemy-' + EnemyType.Type2, 'assets/enemies/enemy-type2.png', { frameWidth: 32, frameHeight: 32 });
-//    scene.load.spritesheet('enemy-' + EnemyType.Type3, 'assets/enemies/enemy-type3.png', { frameWidth: 32, frameHeight: 32 });};
+export { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations };

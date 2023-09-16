@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { playerType ,createPlayer, loadPlayer, Player } from './player';
 import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
-import { loadEnemies, spawnEnemy, trackPlayerAndMove } from './enemy';
+import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
 import StartMenu from './Phaser/Scenes/StartMenu';
@@ -52,7 +52,7 @@ export default class Game extends Phaser.Scene
         loadEnemies(this)
         loadHearts(this)
         loadDebuffs(this)
-        //loadBuffs(this
+        //loadBuffs(this)
     }
 
     create() {
@@ -97,6 +97,7 @@ export default class Game extends Phaser.Scene
 
         //Create enemies group and set collisions with the player and projectiles
         this.enemiesGroup = this.physics.add.group();
+        createEnemiesAnimations(this);
         this.physics.add.collider(this.enemiesGroup, this.player, this.handlePlayerEnemyCollision, null, this);
         this.physics.add.collider(this.enemiesGroup, this.projectilesGroup, this.handleProjectileEnemyCollision, null, this);
 
