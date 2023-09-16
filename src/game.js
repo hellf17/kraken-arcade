@@ -4,12 +4,7 @@ import { loadProjectiles, createProjectileAnimation, loadProjectileSound, create
 import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } from './enemy';
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
-import StartMenu from './Phaser/Scenes/StartMenu';
-import PauseMenu from './Phaser/Scenes/PauseMenu';
-import OptionsMenuScene from './Phaser/Scenes/OptionsMenu';
-import EndScene from './Phaser/Scenes/EndMenu';
-
-
+import { loadBuffs, createBuffsAnimation, Buffs, spawnBuffs } from './buffs';
 
 
 export default class Game extends Phaser.Scene
@@ -27,7 +22,7 @@ export default class Game extends Phaser.Scene
         this.lastEnemyIncreaseTime = 0; // Initialize to 0
 
         //Initialize projectile variables
-        this.projectileType = 0; // Default projectile type - can change with buffs/debuffs
+        this.projectileType = 0; // Default projectile type - can change with in game projectile pickups
 
         //Initialize heart variables
         this.heartSpawnInterval = 15000; // Initial interval for spawning hearts
@@ -35,12 +30,15 @@ export default class Game extends Phaser.Scene
         this.lastHeartSpawnTime = 0; // Initialize to 0
 
         //Initialize buffs variables
-        this.buffs = []; // Array to store active buffs
+        this.buffSpawnInterval = 30000; // 30 s Initial interval for spawning buffs
+        this.maxBuffsOnScreen = 2; // Initial maximum number of buffs on the screen
+        this.lastBuffSpawnTime = 0; // Initialize to 0
 
         //Initialize debuffs variables
-        this.debuffSpawnInterval = 5000;
-        this.lastDebuffSpawnTime = 0;
-        this.maxDebuffsOnScreen = 21;
+        this.debuffSpawnInterval = 30000; // 30s Initial interval for spawning debuffs
+        this.maxDebuffsOnScreen = 2; // Initial maximum number of debuffs on the screen
+        this.lastDebuffSpawnTime = 0; // Initialize to 0
+        
     }
 
     preload (){
@@ -52,7 +50,7 @@ export default class Game extends Phaser.Scene
         loadEnemies(this)
         loadHearts(this)
         loadDebuffs(this)
-        //loadBuffs(this)
+        loadBuffs(this)
     }
 
     create() {
@@ -106,6 +104,11 @@ export default class Game extends Phaser.Scene
         createDebuffsAnimation(this);
         this.physics.add.collider(this.player, this.debuffsGroup, this.handlePlayerDebuffCollision, null, this);
 
+        //Create buffs group and set collisions with the player
+        this.buffsGroup = this.physics.add.group();
+        createBuffsAnimation(this);
+        this.physics.add.collider(this.player, this.buffsGroup, this.handlePlayerBuffCollision, null, this);
+
         //Create inital UI hearts group
         this.heartsUiGroup = this.physics.add.group();
         drawUiHeart(this);
@@ -113,8 +116,6 @@ export default class Game extends Phaser.Scene
         //Create hearts group and set collisions with the player
         this.heartGameGroup = this.physics.add.group();
         this.physics.add.collider(this.player, this.heartGameGroup, this.handlePlayerHeartCollision, null, this);
-
-
                 
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
@@ -192,6 +193,42 @@ export default class Game extends Phaser.Scene
             }
         }
     }
+
+/*     handlePlayerDebuffCollision() { //need to properly implement this
+        for (let i = this.debuffsGroup.getChildren().length - 1; i >= 0; i--) {
+            const debuff = this.debuffsGroup.getChildren()[i];
+            const debuffDamage = debuff.getData('damage');
+            if (Phaser.Geom.Intersects.RectangleToRectangle(debuff.getBounds(), this.player.getBounds())) {
+                debuff.destroy();
+                this.player.receiveDamage(debuffDamage);
+            }
+        }
+    } */
+
+    handlePlayerBuffCollision() { //need to properly implement this
+        for (let i = this.buffsGroup.getChildren().length - 1; i >= 0; i--) {
+            const buff = this.buffsGroup.getChildren()[i];
+            if (Phaser.Geom.Intersects.RectangleToRectangle(buff.getBounds(), this.player.getBounds())) {
+                buff.destroy();
+                this.player.hitpoints += buff.getData('health');
+                this.player.shield += buff.getData('shield');
+                this.player.maxHitpoints += buff.getData('maxHitpointsIncrease');
+
+                // Sets a timer for the damage and velocity increase
+                this.time.delayedCall(buff.getData('duration'), () => {
+                
+                    // Increase player speed based on the multiplier in the buff
+                    this.player.setVelocity *= buff.getData('speed');
+                    
+                    // Increase projectile damage based on the multiplier in the buff
+                    this.player.damageMultiplier = buff.getData('damage');
+                
+                    // Increase projectile speed
+                }
+            )};
+        }
+    }
+
   
     update(time) {
         // Call timeTracker function at 1-second intervals
@@ -226,8 +263,11 @@ export default class Game extends Phaser.Scene
         //Call the spawnAndUpdateHearts function to potentially spawn new hearts
         spawnHearts(this, this.time.now);
 
-        //Call the spawnAndUpdateDebuffs function to potentially spawn new debuffs
+        //Call the spawnDebuffs function to potentially spawn new debuffs
         spawnDebuffs(this, this.time.now);
+
+        //Call the spawnBuffs function to potentially spawn new buffs
+        spawnBuffs(this, this.time.now);
 
         //Handle player dying
 /*         if (this.player.isAlive === false) {
@@ -247,7 +287,7 @@ export default class Game extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
-    scene: [StartMenu, PauseMenu, Game],
+    scene: './Phaser/Scenes/Scenes',
     scale: {
       width: '100%',
       height: '100%',

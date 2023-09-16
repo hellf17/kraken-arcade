@@ -16,8 +16,8 @@ const loadProjectiles = (scene) => {
 };
 
 // Create projectile - called from the player.js file
-const createProjectile = (scene, playerX, playerY, type = 0) => {
-    const projectile = new Projectile(scene, playerX, playerY, type);
+const createProjectile = (scene, playerX, playerY, type = 0, damageMultiplier) => {
+    const projectile = new Projectile(scene, playerX, playerY, type, damageMultiplier);
 
     // Add projectile to the projectiles group
     scene.projectilesGroup.add(projectile);
@@ -86,8 +86,8 @@ const playProjectileSound = () => {
 };
 
 class Projectile extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, type) {
-        super(scene, x, y, 'projectile' + type);
+    constructor(scene, x, y, type, damageMultiplier) {
+        super(scene, x, y, 'projectile' + type, damageMultiplier);
         scene.add.existing(this);
         scene.physics.add.existing(this);
         this.setCollideWorldBounds(false);
@@ -99,12 +99,12 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
 
         switch (type) { // Set projectile stats based on type
             case projectileType.Type1:
-                this.damage = 1;
+                this.damage = 1 * damageMultiplier;
                 this.speed = 350;
                 this.setBounce(0);
                 break;
             case projectileType.Type2:
-                this.damage = 1;
+                this.damage = 2 * damageMultiplier;
                 this.speed = 350;
                 this.setBounce(0.8);
                 break;

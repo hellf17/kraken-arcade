@@ -48,6 +48,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.isPlayerInvencible = false;
         this.isPlayerUltimateReady = false;
         this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
+        this.damageMultiplier = 1;
 
         this.xpTracker = 0;
         this.timeSurvived = 0;
@@ -176,7 +177,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isPlayerAttacking = true;
                            
                 //Creates projectiles and adds them to the projectiles group
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType);
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType, this.damageMultiplier);
 
                 //Animates the projectile
                 playProjectileAnimation(projectile, scene.projectileType);
@@ -193,7 +194,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isPlayerAttacking = true;
             
                 // Creates projectiles and adds them to the projectiles group
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType);
+                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType, this.damageMultiplier);
 
                 //Animates the projectile
                 playProjectileAnimation(projectile, projectile.type);

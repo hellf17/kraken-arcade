@@ -75,17 +75,24 @@ class Buffs extends Phaser.Physics.Arcade.Sprite {
             case buffType.Type1:
                 this.type = buffType.Type1;
                 this.health = 1;
+                this.shield = 1;
+                this.maxHitpointsIncrease = 1;
                 this.speed = 1.1;
+                this.damage = 1;
                 break;
             case buffType.Type2:
                 this.type = buffType.Type2;
                 this.health = 1;
+                this.shield = 1;
+                this.maxHitpointsIncrease = 1;
                 this.speed = 1;
                 this.damage = 1.2;
                 break;
             case buffType.Type3:
                 this.type = buffType.Type3;
                 this.health = 1;
+                this.shield = 1;
+                this.maxHitpointsIncrease = 1;
                 this.speed = 1.1;
                 this.damage = 1.25;
                 break;
