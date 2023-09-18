@@ -9,8 +9,8 @@ const projectileType = {
 const loadProjectiles = (scene) => {
 
     scene.load.spritesheet('projectile0', 'src/assets/images/spritesheets/projectiles/default_projectile.png', {
-        frameWidth: 110,
-        frameHeight: 125,
+        frameWidth: 64,
+        frameHeight: 64,
     });
 
 };
@@ -44,14 +44,14 @@ const createProjectileAnimation = (scene) => {
 
         scene.anims.create({
             key: animationKey,
-            frames: scene.anims.generateFrameNames(animationKey, { start: 0, end: 10 }),
+            frames: scene.anims.generateFrameNames(animationKey, { start: 0, end: 8 }),
             frameRate: 11,
             repeat: -1
         });
 
         scene.anims.create({
             key: hitAnimationKey,
-            frames: scene.anims.generateFrameNames(animationKey, { start: 11, end: 15 }),
+            frames: scene.anims.generateFrameNames(animationKey, { start: 9, end: 13 }),
             frameRate: 5,
             repeat: 0
         });

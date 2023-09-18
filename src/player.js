@@ -48,7 +48,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.isPlayerInvencible = false;
         this.isPlayerUltimateReady = false;
         this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
-        this.damageMultiplier = 1;
+        this.damageMultiplier = 1; // 1 is the normal damage, buffs/debuffs can change this value
+        this.speedMultiplier = 1; // 1 is the normal speed, buffs/debuffs can change this value
 
         this.xpTracker = 0;
         this.timeSurvived = 0;
@@ -114,7 +115,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }    
 
-    movePlayer (multiveloc = 1) {    
+    movePlayer () {    
         // Player movements
         const baseVeloc = 150;
         let velocityX = 0;
@@ -122,16 +123,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     
         
         if (this.keys.left.isDown) {
-            velocityX = -baseVeloc * multiveloc;
+            velocityX = -baseVeloc * this.speedMultiplier;
         } 
         if (this.keys.right.isDown) {
-            velocityX = baseVeloc * multiveloc;
+            velocityX = baseVeloc * this.speedMultiplier;
         }
         if (this.keys.down.isDown) {
-            velocityY = baseVeloc * multiveloc;
+            velocityY = baseVeloc * this.speedMultiplier;
         } 
         if (this.keys.up.isDown) {
-            velocityY = -baseVeloc * multiveloc;
+            velocityY = -baseVeloc * this.speedMultiplier;
         }
           
         // Set player velocity based on input
@@ -229,7 +230,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //this.animState.die();       
         this.isPlayerAlive = false;
         this.scene.scene.pause();
-        this.scene.scene.start('EndMenu');
     }
 
     update() {   
@@ -253,6 +253,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.originalFacingX = 1;
             }
         }
+
+        // Update player movement in case the player get buffs or debuffs
+        this.movePlayer();
 
         //Update ultimate attack to ready if the player has enough kills and time survived
         

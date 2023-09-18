@@ -5,6 +5,10 @@ import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } 
 import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
 import { loadBuffs, createBuffsAnimation, Buffs, spawnBuffs } from './buffs';
+import EndMenu from './Phaser/Scenes/EndMenu';
+import StartMenu from './Phaser/Scenes/StartMenu';
+import OptionsMenu from './Phaser/Scenes/OptionsMenu';
+import PauseMenu from './Phaser/Scenes/PauseMenu';
 
 
 export default class Game extends Phaser.Scene
@@ -30,7 +34,7 @@ export default class Game extends Phaser.Scene
         this.lastHeartSpawnTime = 0; // Initialize to 0
 
         //Initialize buffs variables
-        this.buffSpawnInterval = 30000; // 30 s Initial interval for spawning buffs
+        this.buffSpawnInterval = 10000; // 10s Initial interval for spawning buffs
         this.maxBuffsOnScreen = 2; // Initial maximum number of buffs on the screen
         this.lastBuffSpawnTime = 0; // Initialize to 0
 
@@ -213,17 +217,17 @@ export default class Game extends Phaser.Scene
                 this.player.hitpoints += buff.getData('health');
                 this.player.shield += buff.getData('shield');
                 this.player.maxHitpoints += buff.getData('maxHitpointsIncrease');
+                this.player.speedMultiplier = buff.getData('speed');
+                this.player.damageMultiplier = buff.getData('damage');
 
                 // Sets a timer for the damage and velocity increase
                 this.time.delayedCall(buff.getData('duration'), () => {
                 
-                    // Increase player speed based on the multiplier in the buff
-                    this.player.setVelocity *= buff.getData('speed');
+                    // Reset player speed to default
+                    this.player.speedMultiplier = 1;
                     
-                    // Increase projectile damage based on the multiplier in the buff
-                    this.player.damageMultiplier = buff.getData('damage');
-                
-                    // Increase projectile speed
+                    // Reset player damage to default
+                    this.player.damageMultiplier = 1;
                 }
             )};
         }
@@ -269,8 +273,8 @@ export default class Game extends Phaser.Scene
         //Call the spawnBuffs function to potentially spawn new buffs
         spawnBuffs(this, this.time.now);
 
-        //Handle player dying
-/*         if (this.player.isAlive === false) {
+        //Handle player dying and ending the game with a game over screenshot
+         if (this.player.isAlive === false) {
             //Takes screen shot of the game
             const gameOverScreenshot = this.scene.renderer.snapshot(
                 this.textures.addBase64('gameOverScreenshot', gameOverScreenshot.src)
@@ -280,14 +284,14 @@ export default class Game extends Phaser.Scene
             this.sound.stopAll();
 
             //Passes the screenshot to the game over scene and ends the game
-            this.scene.start('EndScene', { gameOverScreenshot });
-        } */
+            this.scene.start('EndMenu', { gameOverScreenshot, player: this.player });
+        }
     }
 }
 
 const config = {
     type: Phaser.AUTO,
-    scene: './Phaser/Scenes/Scenes',
+    scene: [StartMenu, Game, PauseMenu, EndMenu],
     scale: {
       width: '100%',
       height: '100%',

@@ -13,30 +13,31 @@ const loadEnemies = (scene) => {
     scene.load.spritesheet(
         'enemy1',
         'src/assets/images/spritesheets/enemies/enemy1.png',
-        { frameWidth: 150, frameHeight: 75});
+        { frameWidth: 64, frameHeight: 64});
 
     
 };
 
 const createEnemiesAnimations = (scene) => {
-    scene.anims.create({
+/*     scene.anims.create({
         key: 'enemy0',
         frames: scene.anims.generateFrameNames('enemy0', { start: 0, end: 1 }),
         frameRate: 2,
         repeat: -1,
         yoyo: true,
         loop: true
-        });
+        }); */
 
     scene.anims.create({
         key: 'enemy1',
-        frames: scene.anims.generateFrameNames('enemy1', { start: 0, end: 1 }),
-        frameRate: 2,
+        frames: scene.anims.generateFrameNames('enemy1', { start: 0, end: 2 }),
+        frameRate: 3,
         repeat: -1,
         yoyo: true,
         loop: true
         });
-    
+        
+/*     
     scene.anims.create({
         key: 'enemy2',
         frames: scene.anims.generateFrameNames('enemy2', { start: 0, end: 1 }),
@@ -45,9 +46,7 @@ const createEnemiesAnimations = (scene) => {
         yoyo: true,
         loop: true
         });
-
-    
-
+ */
 };
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
@@ -72,7 +71,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 15;
                 this.damage = 1;
                 this.dodgeModifier = 1.2;
-                this.setScale(1);
+                this.setScale(2.4);
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;

@@ -20,11 +20,15 @@ class EndMenu extends Phaser.Scene {
     // Set the background image from the playerScreenshot.src
     const backgroundImage = this.add.image(0, 0, 'gameOverScreenshot');
 
+    // Show the player's score and time survived
+    const timeText = this.add.text(screenWidth / 2 + 200, screenHeight / 2 + 100, 'Time: ' + (Math.floor(player.timeSurvived / 1000)% 60).toFixed(0), { fontSize: '32px', fill: '#000' });
+    const scoreText = this.add.text(screenWidth / 2 + 350, screenHeight / 2 + 150, 'Score: ' + player.xpTracker, { fontSize: '32px', fill: '#000' });
+
     // Background music
     //const music = this.sound.add('endMenuMusic', { loop: true });
     //music.play();
 
-    // End Game button
+    // Share button
     const share = this.add.sprite(screenWidth / 2, screenHeight / 2 - 200, 'share');
     this.anims.create({
         key: 'share',
@@ -35,7 +39,7 @@ class EndMenu extends Phaser.Scene {
     this.anims.play('share', true);
     share.setInteractive(); // Make the button interactive
 
-    // Options button
+    // Register score button
     const register = this.add.sprite(screenWidth / 2, screenHeight / 2 - 350, 'registerScore');
     this.anims.create({
         key: 'registerScore',
