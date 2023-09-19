@@ -71,7 +71,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 15;
                 this.damage = 1;
                 this.dodgeModifier = 1.2;
-                this.setScale(2.4);
+                this.setScale(2.5);
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;

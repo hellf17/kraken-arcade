@@ -10,22 +10,22 @@ const loadHearts = (scene) => {
     scene.load.spritesheet(
         'heartRed',
         'src/assets/images/spritesheets/UI/heart_red_spritesheet.png',
-        { frameWidth: 95, frameHeight: 100, spacing: 14 });
+        { frameWidth: 110, frameHeight: 100, spacing: 0 });
     
     scene.load.spritesheet(
        'heartBlue',
         'src/assets/images/spritesheets/UI/heart_blue_spritesheet.png',
-        { frameWidth: 95, frameHeight: 100, spacing: 14 });
+        { frameWidth: 110, frameHeight: 100, spacing: 0 });
     
     scene.load.spritesheet(
         'heartGreen',
         'src/assets/images/spritesheets/UI/heart_green_spritesheet.png',
-        { frameWidth: 95, frameHeight: 100, spacing: 14 });
+        { frameWidth: 110, frameHeight: 100, spacing: 0 });
         
     scene.load.spritesheet(
         'heartTransparent',
         'src/assets/images/spritesheets/UI/heart_transparent_spritesheet.png',
-        { frameWidth: 95, frameHeight: 100, spacing: 14 });
+        { frameWidth: 110, frameHeight: 100, spacing: 0 });
 };
 
 const createHeartAnimation = (scene) => {
@@ -69,7 +69,7 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, 'heart' + type);
         scene.add.existing(this);
         scene.physics.world.enable(this);
-        this.setScale(0.2);
+        this.setScale(0.3);
         
 
         switch (type) {
@@ -95,9 +95,7 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
-const drawUiHeart = (scene, type = 'Red') => {
-    createHeartAnimation(scene);
-
+const drawUiMaxHearts = (scene) => {
     const centerX = scene.cameras.main.width / 2;
     const heartSpacing = 32;
 
@@ -107,6 +105,11 @@ const drawUiHeart = (scene, type = 'Red') => {
         transparentHeart.setFrame(0); // Set the first frame
         transparentHeart.anims.play('heartTransparent', true);
     }
+};
+
+const drawUiHearts = (scene, type = 'Red') => {
+    const centerX = scene.cameras.main.width / 2;
+    const heartSpacing = 32;
 
     //Fill hearts for the player's hitpoints
     for (let i = 0; i < scene.player.hitpoints; i++) {
@@ -127,7 +130,7 @@ const removeUiHeart = (scene, enemyDamage) => {
     }
 }
 
-const addUiHeart = (scene, heartGame) => { // needs proper implementation and testing
+const addUiHeart = (scene, heartGame) => {
     const lastHeart = scene.heartsUiGroup.getChildren()[scene.heartsUiGroup.getChildren().length - 1];
     const heartSpacing = 32;
 
@@ -171,4 +174,4 @@ const spawnHearts = (scene, currentTime) => {
 };
 
 
-export { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts };
+export { Heart, loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, spawnHearts };

@@ -78,8 +78,8 @@ const spawnDebuffs = (scene, currentTime) => {
     if (currentTime - scene.lastDebuffSpawnTime > scene.debuffSpawnInterval && scene.debuffsGroup.getChildren().length < scene.maxDebuffsOnScreen) {
         scene.lastDebuffSpawnTime = currentTime;
         const randomSpawnChance = Math.random();
-
         let accumulatedChance = 0;
+
         for (const debuffSpawnChance of debuffSpawnChances) {
             accumulatedChance += debuffSpawnChance.chance;
             if (randomSpawnChance <= accumulatedChance) {
@@ -88,7 +88,7 @@ const spawnDebuffs = (scene, currentTime) => {
                 //Check the debuff type
                 if (debuff_type == debuffType.Type1) {
                     //Spawn multiple sprites for 'fog' debuff
-                    const numberOfFogSprites = 25; // Adjust the number of fog sprites as needed
+                    const numberOfFogSprites = 15; // Adjust the number of fog sprites as needed
 
                     for (let i = 0; i < numberOfFogSprites; i++) {
                         //Create a fog sprite with random positions
@@ -99,7 +99,6 @@ const spawnDebuffs = (scene, currentTime) => {
 
                     //Delayed removal for 'fog' sprites
                     setTimeout(() => {
-                        console.log('Removing fog sprites');
                         scene.debuffsGroup.getChildren().forEach((debuff) => {
                             if (debuff.type == debuffType.Type1) {
                                 debuff.destroy();

@@ -67,14 +67,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             case playerType.Type1:
                 this.hitpoints = 5;
                 this.maxHitpoints = 5;
-                this.baseVelocity = 70;
+                this.baseVelocity = 150;
                 this.xpTracker = 0;
                 this.shield = 0;
                 break;
             case playerType.Type2:
                 this.hitpoints = 4;
                 this.maxHitpoints = 4;
-                this.baseVelocity = 80;
+                this.baseVelocity = 160;
                 this.xpTracker = 0;
                 this.shield = 0;
                 break;
@@ -117,7 +117,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     movePlayer () {    
         // Player movements
-        const baseVeloc = 150;
+        const baseVeloc = this.baseVelocity;
         let velocityX = 0;
         let velocityY = 0;
     
@@ -230,9 +230,22 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //this.animState.die();       
         this.isPlayerAlive = false;
         this.scene.scene.pause();
+        
+        //Takes screen shot of the game
+        const gameOverScreenshot = this.scene.renderer.snapshot(
+            this.scene.textures.addBase64('gameOverScreenshot', gameOverScreenshot.src)
+            );
+        
+        //Stops the background music
+        this.scene.sound.stopAll();
+        
+        //Passes the screenshot to the game over scene and ends the game
+        this.scene.scene.start('EndMenu', { gameOverScreenshot, player: this });
+
     }
 
-    update() {   
+    update() {
+        // Update time tracker  
         this.timeTracker();
 
         // Calculate angle to cursor
@@ -253,9 +266,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.originalFacingX = 1;
             }
         }
-
-        // Update player movement in case the player get buffs or debuffs
-        this.movePlayer();
 
         //Update ultimate attack to ready if the player has enough kills and time survived
         

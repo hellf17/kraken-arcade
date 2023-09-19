@@ -1,10 +1,10 @@
 import * as Phaser from 'phaser';
 
-const buffType = {
-    Type1: 'green',
-    Type2: 'blue',
-    Type3: 'black'
-};
+const buffType = [
+    { type: 'greenBuff', chance: 0.20 },
+    { type: 'blueBuff', chance: 0.15 },
+    { type: 'blackBuff', chance: 0.10 },
+];
 
 const loadBuffs = (scene) => {
     scene.load.spritesheet(
@@ -71,62 +71,75 @@ class Buffs extends Phaser.Physics.Arcade.Sprite {
         this.setScale(2.5);       
 
         switch (type) {
-            case buffType.Type1:
-                this.type = buffType.Type1;
+            case buffType.greenBuff:
                 this.health = 1;
                 this.shield = 1;
-                this.maxHitpointsIncrease = 1;
-                this.speed = 1.1;
-                this.damage = 1;
-                this.durarion = 5000;
+                this.maxHitpointsIncrease = 3;
+                this.speed = 2;
+                this.damage = 2;
+                this.duration = 5000;
                 break;
-            case buffType.Type2:
-                this.type = buffType.Type2;
+            case buffType.blueBuff:
                 this.health = 1;
                 this.shield = 1;
-                this.maxHitpointsIncrease = 1;
+                this.maxHitpointsIncrease = 3;
                 this.speed = 1;
-                this.damage = 1.2;
-                this.durarion = 10000;
+                this.damage = 2;
+                this.duration = 10000;
                 break;
-            case buffType.Type3:
-                this.type = buffType.Type3;
+            case buffType.blackBuff:
                 this.health = 1;
                 this.shield = 1;
-                this.maxHitpointsIncrease = 1;
-                this.speed = 1.2;
-                this.damage = 1.25;
-                this.durarion = 15000;
+                this.maxHitpointsIncrease = 3;
+                this.speed = 2;
+                this.damage = 2;
+                this.duration = 15000;
                 break;
         }        
     }
 }
 
-const buffSpawnChances = [
-    { type: buffType.Type1, chance: 0.55 },  // 15% chance
-    { type: buffType.Type2, chance: 0.50 },  // 10% chance
-    { type: buffType.Type3, chance: 0.35 },  // 5% chance
-];
+let lastSpawnedBuffType = null; // Initialize a variable to store the last spawned buff type
 
 const spawnBuffs = (scene, currentTime) => {
     if (currentTime - scene.lastBuffSpawnTime > scene.buffSpawnInterval && scene.buffsGroup.getChildren().length < scene.maxBuffsOnScreen) {
         scene.lastBuffSpawnTime = currentTime;
         const randomSpawnChance = Math.random();
+        console.log(randomSpawnChance);
         let accumulatedChance = 0;
 
-        for (const BuffSpawnChance of buffSpawnChances) {
-            accumulatedChance += BuffSpawnChance.chance;
-          
+        // Iterate through each buff type and calculate accumulated chances
+        for (const buffColors in buffType) {
+            const actualBuff = buffType[buffColors];
+
+            // Check if the current buff type is the same as the last spawned buff type
+            if (lastSpawnedBuffType === actualBuff.type) {
+                continue;
+            }
+            accumulatedChance += actualBuff.chance;
+
             if (randomSpawnChance <= accumulatedChance) {
-                const buff_type = BuffSpawnChance.type;
+                const buff_type = actualBuff.type;
                 const Buff = new Buffs(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), buff_type);
+                
+                Buff.setData('type', buff_type);
+                Buff.setData('duration', Buff.duration);
+                Buff.setData('health', Buff.health);
+                Buff.setData('shield', Buff.shield);
+                Buff.setData('maxHitpointsIncrease', Buff.maxHitpointsIncrease);
+                Buff.setData('speed', Buff.speed);
+                Buff.setData('damage', Buff.damage);
+                
                 playBuffsAnimation(scene, Buff);
                 scene.buffsGroup.add(Buff);
+                lastSpawnedBuffType = buff_type; 
+
+                accumulatedChance = 0;
+
+                break;
             }
-            break;
         }
     }
 }
-
 
 export { Buffs, loadBuffs, createBuffsAnimation, spawnBuffs };

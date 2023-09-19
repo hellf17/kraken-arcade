@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { playerType ,createPlayer, loadPlayer, Player } from './player';
 import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } from './enemy';
-import { Heart, loadHearts, drawUiHeart, removeUiHeart, addUiHeart, spawnHearts } from './heart';
+import { Heart, loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
 import { loadBuffs, createBuffsAnimation, Buffs, spawnBuffs } from './buffs';
 import EndMenu from './Phaser/Scenes/EndMenu';
@@ -88,9 +88,13 @@ export default class Game extends Phaser.Scene
         this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType)
         this.player.anims.play(('player' + this.playerType), true)
 
+        console.log(this.player.maxHitpoints)
+        console.log(this.player.hitpoints)
+        console.log(this.player.speedMultiplier)
+        console.log(this.player.damageMultiplier)
+
         //Create player input
         this.player.setupKeys(this);
-        this.player.movePlayer();
                         
         //Create the projectile groups, animation and sound
         this.projectilesGroup = this.physics.add.group();
@@ -115,7 +119,9 @@ export default class Game extends Phaser.Scene
 
         //Create inital UI hearts group
         this.heartsUiGroup = this.physics.add.group();
-        drawUiHeart(this);
+        createHeartAnimation(this);
+        drawUiMaxHearts(this);
+        drawUiHearts(this);
 
         //Create hearts group and set collisions with the player
         this.heartGameGroup = this.physics.add.group();
@@ -123,8 +129,8 @@ export default class Game extends Phaser.Scene
                 
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {
-            fontFamily: 'Arial',
-            fontSize: '25px',
+            fontFamily: 'Minecraft',
+            fontSize: '30px',
             color: '#000000',
             stroke: '#ffffff',
             strokeThickness: 2,
@@ -134,8 +140,8 @@ export default class Game extends Phaser.Scene
         
         //Create and draw the time survived tracker text
         this.timeSurvivedTrackerText = this.add.text(20, 20, 'Time Survived: 0', {
-            fontFamily: 'Arial',
-            fontSize: '25px',
+            fontFamily: 'Minecraft',
+            fontSize: '30px',
             color: '#000000',
             stroke: '#ffffff',
             strokeThickness: 2,
@@ -159,17 +165,23 @@ export default class Game extends Phaser.Scene
     handlePlayerHeartCollision() {
         for (let i = this.heartGameGroup.getChildren().length - 1; i >= 0; i--) {
             const heart = this.heartGameGroup.getChildren()[i];
-            const heartHealth = heart.getData('health');
-            const heartShield = heart.getData('shield');
-            const heartMaxHitpointsIncrease = heart.getData('maxHitpointsIncrease');
 
             if (Phaser.Geom.Intersects.RectangleToRectangle(heart.getBounds(), this.player.getBounds())) {
-                if (this.player.hitpoints < this.player.maxHitpoints) { // If player is not at max hitpoints adds the heart to UI and increases hitpoints
-                    this.player.hitpoints += heartHealth;
+                this.player.maxHitpoints += heart.getData('maxHitpointsIncrease');
+                
+                // Update max hitpoints at UI
+                drawUiMaxHearts(this);
+
+                // If player is not at max hitpoints adds the heart to UI and increases hitpoints
+                if (this.player.hitpoints < this.player.maxHitpoints) { 
+                    this.player.hitpoints += heart.getData('health');
+                    this.heartsUiGroup.add(heart);
                     addUiHeart(this, heart);
                 }
-                this.player.shield += heartShield;
-                this.player.maxHitpoints += heartMaxHitpointsIncrease;             
+                // Increases shield
+                this.player.shield += heart.getData('shield');     
+                
+                // Destroy the heart
                 heart.destroy();           
             }
         }
@@ -185,8 +197,12 @@ export default class Game extends Phaser.Scene
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemyBounds, projectileBounds)) {
                     // Enemy is hit by projectile
                     projectile.isHit = true;
-                    enemy.receiveDamage(projectile.damage); 
-                    projectile.destroy();
+                    enemy.receiveDamage(projectile.damage);
+                    
+                    // Destroy projectile after a time delay to allow for animation to play
+                    setTimeout(() => {
+                        projectile.destroy();
+                    }, 200);
 
                     // Check if enemy is dead and add XP to player
                     if (enemy.hitpoints <= 0) {
@@ -212,24 +228,49 @@ export default class Game extends Phaser.Scene
     handlePlayerBuffCollision() { //need to properly implement this
         for (let i = this.buffsGroup.getChildren().length - 1; i >= 0; i--) {
             const buff = this.buffsGroup.getChildren()[i];
+            console.log(buff)
+
             if (Phaser.Geom.Intersects.RectangleToRectangle(buff.getBounds(), this.player.getBounds())) {
-                buff.destroy();
-                this.player.hitpoints += buff.getData('health');
-                this.player.shield += buff.getData('shield');
-                this.player.maxHitpoints += buff.getData('maxHitpointsIncrease');
-                this.player.speedMultiplier = buff.getData('speed');
-                this.player.damageMultiplier = buff.getData('damage');
+                // Increase max hitpoints
+                
+                console.log(buff.getData('health'))
+                console.log(buff.health)
+                console.log(buff.getData('maxHitpointsIncrease'))
+                console.log(buff.maxHitpointsIncrease)
+                console.log(buff.getData('damage'))
+                console.log(buff.damage)
+                console.log(buff.getData('shield'))
+                console.log(buff.shield)
+                console.log(buff.getData('speed'))
+                console.log(buff.speed)
+
+
+                this.player.maxHitpoints += buff.maxHitpointsIncrease;
+
+                // Update max hitpoints at UI
+                drawUiMaxHearts(this);
+                
+                if (this.player.hitpoints < this.player.maxHitpoints) {
+                    this.player.hitpoints += buff.health;
+                }
+                // Increases shield
+                this.player.shield += buff.shield;
+
+                // Increases speed and damage multiplier
+                this.player.speedMultiplier = buff.speed;
+                this.player.damageMultiplier = buff.damage;
 
                 // Sets a timer for the damage and velocity increase
-                this.time.delayedCall(buff.getData('duration'), () => {
-                
+                setTimeout(() => {
                     // Reset player speed to default
                     this.player.speedMultiplier = 1;
                     
                     // Reset player damage to default
                     this.player.damageMultiplier = 1;
-                }
-            )};
+                }), buff.duration;
+            
+                buff.destroy();
+            };
         }
     }
 
@@ -250,13 +291,10 @@ export default class Game extends Phaser.Scene
         this.timeSurvivedTrackerText.setText('Time Survived: ' + formattedTimeSurvived);
 
         //Player movements
-        this.player.movePlayer(); // Move player; can pass multiveloc to increase velocity for buffs/debuffs
+        this.player.movePlayer(); // updade to increase velocity for buffs/debuffs
     
         //Shoot projectile towards mouse pointer
         this.player.playerControls(this);
-
-        // Update player instance
-        this.player.update();
       
         //Update enemies
         trackPlayerAndMove(this, this.enemiesGroup, this.projectilesGroup);
@@ -273,19 +311,6 @@ export default class Game extends Phaser.Scene
         //Call the spawnBuffs function to potentially spawn new buffs
         spawnBuffs(this, this.time.now);
 
-        //Handle player dying and ending the game with a game over screenshot
-         if (this.player.isAlive === false) {
-            //Takes screen shot of the game
-            const gameOverScreenshot = this.scene.renderer.snapshot(
-                this.textures.addBase64('gameOverScreenshot', gameOverScreenshot.src)
-            );
-
-            //Stops the background music
-            this.sound.stopAll();
-
-            //Passes the screenshot to the game over scene and ends the game
-            this.scene.start('EndMenu', { gameOverScreenshot, player: this.player });
-        }
     }
 }
 

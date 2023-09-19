@@ -80,7 +80,7 @@ class PauseMenu extends Phaser.Scene {
     
         optionsButton.on('pointerdown', () => {
             // Handle Options button click
-            this.scene.start('OptionsMenuScene');
+            this.scene.start('OptionsMenu');
         });
     
         connectButton.on('pointerover', () => {

@@ -6,7 +6,7 @@ class StartMenu extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('startMenu', './src/assets/images/backgrounds/startMenu.png');
+        this.load.spritesheet('startMenu', './src/assets/images/backgrounds/startMenuSpritesheet.png', {frameWidth: 960, frameHeight: 544});
         this.load.spritesheet('playButton', './src/assets/images/buttons/playButton.png', {frameWidth: 300, frameHeight: 100});
         this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
@@ -18,8 +18,14 @@ class StartMenu extends Phaser.Scene {
     const screenWidth = window.innerWidth
     const screenHeight = window.innerHeight
 
-    // Background image; music is the same as the start menu
-    const backgroundImage = this.add.image(0, 0, 'startMenu');
+    // Background image
+    const backgroundImage = this.add.sprite(0, 0, 'startMenu');
+    this.anims.create({
+        key: 'startMenu',
+        frames: this.anims.generateFrameNumbers('startMenu', { start: 0, end: 1 }),
+        frameRate: 2,
+        repeat: -1
+    });
 
     // Calculate a single scale factor to fit the image proportionally
     const scale = Math.max(screenWidth / backgroundImage.width, screenHeight / backgroundImage.height);
@@ -29,6 +35,9 @@ class StartMenu extends Phaser.Scene {
 
     // Position the image at the center of the screen
     backgroundImage.setPosition(screenWidth / 2, screenHeight / 2);
+
+    // Play the animation
+    backgroundImage.anims.play('startMenu', true);
 
     // Background music
     //const music = this.sound.add('backgroundMusic', { loop: true });

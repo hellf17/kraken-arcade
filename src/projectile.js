@@ -91,7 +91,7 @@ class Projectile extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         this.setCollideWorldBounds(false);
-        this.setScale(0.2);
+        this.setScale(0.3);
         this.setDepth(0);
 
         this.type = type;
