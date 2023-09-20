@@ -28,7 +28,8 @@ class EndMenu extends Phaser.Scene {
 
     // Set's the background image
     const background = this.add.sprite(screenWidth / 2, screenHeight / 2, 'gameOverBackground');
-    background.setDepth(-1);
+    // Insert a red filter to the background
+    background.setTint(0xff0000);
     
     // Show the player's score, time survived and enemies killed - received from the player file as xp, time and kills
     const scoreText = this.add.text(screenWidth / 2 - 200, screenHeight / 2 - 200 , 'Final Score: ' + this.xp, { 
