@@ -2,8 +2,13 @@ import * as Phaser from 'phaser';
 
 const debuffType = {
     Type1: 'fog',
-    Type2: 'tsunami'
+    //Type2: 'tsunami'
 };
+
+const debuffChance = {
+    fog: 0.25,
+    //tsunami: 0.15
+}
 
 const loadDebuffs = (scene) => {
     scene.load.spritesheet(
@@ -69,10 +74,6 @@ class Debuffs extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
-const debuffSpawnChances = [
-    { type: debuffType.Type1, chance: 0.25 },  // 25% chance
-//    { type: debuffType.Type2, chance: 0.15 },  // 25% chance
-];
 
 const spawnDebuffs = (scene, currentTime) => {
     if (currentTime - scene.lastDebuffSpawnTime > scene.debuffSpawnInterval && scene.debuffsGroup.getChildren().length < scene.maxDebuffsOnScreen) {
@@ -80,19 +81,21 @@ const spawnDebuffs = (scene, currentTime) => {
         const randomSpawnChance = Math.random();
         let accumulatedChance = 0;
 
-        for (const debuffSpawnChance of debuffSpawnChances) {
-            accumulatedChance += debuffSpawnChance.chance;
+        for (const debuffName in debuffType) {
+            const actualdebuff = debuffType[debuffName];
+            const actualdebuffSpawnChance = debuffChance[actualdebuff];
+
+            accumulatedChance += actualdebuffSpawnChance;
             if (randomSpawnChance <= accumulatedChance) {
-                const debuff_type = debuffSpawnChance.type;
-                
+              
                 //Check the debuff type
-                if (debuff_type == debuffType.Type1) {
+                if (actualdebuff == debuffType.Type1) {
                     //Spawn multiple sprites for 'fog' debuff
                     const numberOfFogSprites = 15; // Adjust the number of fog sprites as needed
 
                     for (let i = 0; i < numberOfFogSprites; i++) {
                         //Create a fog sprite with random positions
-                        const fog = new Debuffs(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), debuff_type);
+                        const fog = new Debuffs(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), actualdebuff);
                         playDebuffsAnimation(scene, fog);
                         scene.debuffsGroup.add(fog);
                     }
@@ -107,12 +110,10 @@ const spawnDebuffs = (scene, currentTime) => {
                     }, 5000);
                 } else {
                     //Spawn a single sprite for other debuff types
-                    const debuff = new Debuffs(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), debuff_type);
-                    debuff.setData('type', debuff.type);
+                    const debuff = new Debuffs(scene, Phaser.Math.Between(0, window.innerWidth), Phaser.Math.Between(0, window.innerHeight), actualdebuff);
                     playDebuffsAnimation(scene, debuff);
                     scene.debuffsGroup.add(debuff);
                 }
-                console.log('debuffsGroup: ', scene.debuffsGroup.getChildren().length);
                 break;
             }
         }

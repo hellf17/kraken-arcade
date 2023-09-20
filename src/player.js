@@ -93,9 +93,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.pointer = scene.input.activePointer
     }
 
-    timeTracker() {
+    timeTracker(scene) {
         if (this.isPlayerAlive) {
-            const currentTime = this.scene.time.now;
+            const currentTime = scene.time.now;
             
             if (this.lastTimeSurvivedUpdate === undefined) {
                 this.lastTimeSurvivedUpdate = currentTime;
@@ -211,8 +211,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         //Calls the pause menu
         if (this.keys.pause.isDown) {
-            this.scene.scene.pause();
-            this.scene.scene.start('PauseMenu');
+            this.scene.scene.pause('Game');
+            this.scene.scene.launch('PauseMenu');
         }
     }
 
@@ -225,29 +225,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    kill(){
-        //this.moveState.die();
-        //this.animState.die();       
+    kill() {
         this.isPlayerAlive = false;
-        this.scene.scene.pause();
-        
-        //Takes screen shot of the game
-        const gameOverScreenshot = this.scene.renderer.snapshot(
-            this.scene.textures.addBase64('gameOverScreenshot', gameOverScreenshot.src)
-            );
-        
-        //Stops the background music
+    
+        // Stops the background music
         this.scene.sound.stopAll();
-        
-        //Passes the screenshot to the game over scene and ends the game
-        this.scene.scene.start('EndMenu', { gameOverScreenshot, player: this });
+    
+        // Take a screenshot of the game
+        this.scene.renderer.snapshot(image => {
+            // Store the screenshot in a variable after transforming it into a texture
+            this.scene.textures.addBase64('gameOverBackground', image.src);
+        });
 
+        // Start the EndMenu and passes Xp, time survived, enemy kills, and the screenshot with a fade effect
+        this.scene.scene.transition({
+            target: 'EndMenu',
+            duration: 200,
+            moveBelow: true,
+            onUpdate: this.transitionOut,
+            data: {
+                xp: this.xpTracker,
+                timer: this.timeSurvived,
+                kills: this.enemyKills,
+            }
+        });
     }
 
     update() {
-        // Update time tracker  
-        this.timeTracker();
-
         // Calculate angle to cursor
         const angleToCursor = Phaser.Math.Angle.Between(this.x, this.y, this.scene.input.activePointer.x, this.scene.input.activePointer.y);
     

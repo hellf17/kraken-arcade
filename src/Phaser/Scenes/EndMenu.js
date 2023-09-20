@@ -1,9 +1,18 @@
 import * as Phaser from 'phaser';
 
+
 class EndMenu extends Phaser.Scene {
     constructor() {
         super('EndMenu');
     }
+
+    init (data)
+    {
+        this.xp = data.xp;
+        this.timer = data.timer;
+        this.kills = data.kills;
+    }
+
 
     preload() {
         this.load.spritesheet('share', './src/assets/images/buttons/shareButton.png', { frameWidth: 300, frameHeight: 100 });
@@ -17,51 +26,101 @@ class EndMenu extends Phaser.Scene {
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
 
-    // Set the background image from the playerScreenshot.src
-    const backgroundImage = this.add.image(0, 0, 'gameOverScreenshot');
+    // Set's the background image
+    const background = this.add.sprite(screenWidth / 2, screenHeight / 2, 'gameOverBackground');
+    background.setDepth(-1);
+    
+    // Show the player's score, time survived and enemies killed - received from the player file as xp, time and kills
+    const scoreText = this.add.text(screenWidth / 2 - 200, screenHeight / 2 - 200 , 'Final Score: ' + this.xp, { 
+        fontFamily: 'Minecraft',
+        fontSize: '60px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 3,
+        fontStyle: 'bold'}
+    );
 
-    // Show the player's score and time survived
-    const timeText = this.add.text(screenWidth / 2 + 200, screenHeight / 2 + 100, 'Time: ' + (Math.floor(player.timeSurvived / 1000)% 60).toFixed(0), { fontSize: '32px', fill: '#000' });
-    const scoreText = this.add.text(screenWidth / 2 + 350, screenHeight / 2 + 150, 'Score: ' + player.xpTracker, { fontSize: '32px', fill: '#000' });
+    const killsText = this.add.text(screenWidth / 2 + 150, screenHeight / 2 - 100, 'Kills: ' + this.kills, {
+        fontFamily: 'Minecraft',
+        fontSize: '40px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'}
+    );
+
+    const timeText = this.add.text(screenWidth / 2 - 250, screenHeight / 2 - 100, 'Time: ' + (Math.floor(this.timer / 1000)% 60).toFixed(0), {
+    fontFamily: 'Minecraft',
+    fontSize: '40px',
+    color: '#D40004',
+    stroke: '#ffffff',
+    strokeThickness: 2,
+    fontStyle: 'bold'}
+    );
 
     // Background music
     //const music = this.sound.add('endMenuMusic', { loop: true });
     //music.play();
 
+    // New game button
+    const newGame = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'playButton');
+    newGame.anims.play('playButton', true);
+    newGame.setInteractive(); // Make the button interactive
+
     // Share button
-    const share = this.add.sprite(screenWidth / 2, screenHeight / 2 - 200, 'share');
+    const share = this.add.sprite(screenWidth / 2, screenHeight / 2 + 200, 'share');
     this.anims.create({
         key: 'share',
         frames: this.anims.generateFrameNumbers('share', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
-    this.anims.play('share', true);
+    share.anims.play('share', true);
     share.setInteractive(); // Make the button interactive
 
     // Register score button
-    const register = this.add.sprite(screenWidth / 2, screenHeight / 2 - 350, 'registerScore');
+    const registerScore = this.add.sprite(screenWidth / 2, screenHeight / 2 + 300, 'registerScore');
     this.anims.create({
         key: 'registerScore',
         frames: this.anims.generateFrameNumbers('registerScore', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
-    this.anims.play('registerScore', true);
-    register.setInteractive();
+    registerScore.anims.play('registerScore', true);
+    registerScore.setInteractive();
 
     // Connect Wallet button
-    const connectButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 500, 'connect');
+    const connect = this.add.sprite(screenWidth / 2, screenHeight / 2 + 400, 'connect');
     this.anims.create({
         key: 'connect',
         frames: this.anims.generateFrameNumbers('connect', { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1
     });
-    this.anims.play('connect', true);
-    connectButton.setInteractive();
+    connect.anims.play('connect', true);
+    connect.setInteractive();
 
+    
     // Button interactions
+    newGame.on('pointerover', () => {
+        // Highlight the button when the mouse is over it
+        newGame.setScale(1.1);
+    });
+
+    newGame.on('pointerout', () => {
+        // Reset the button's scale when the mouse is out
+        share.setScale(1);
+    });
+
+    newGame.on('pointerdown', () => {
+        // Start new game
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+            this.scene.start('Game');
+            }
+        )
+    });
+
     share.on('pointerover', () => {
         // Highlight the button when the mouse is over it
         share.setScale(1.1);
@@ -76,31 +135,31 @@ class EndMenu extends Phaser.Scene {
         // Handle share button click - should share the game on social media
     });
 
-    register.on('pointerover', () => {
+    registerScore.on('pointerover', () => {
         // Highlight the button when the mouse is over it
-        register.setScale(1.1);
+        registerScore.setScale(1.1);
     });
 
-    register.on('pointerout', () => {
+    registerScore.on('pointerout', () => {
         // Reset the button's scale when the mouse is out
-        register.setScale(1);
+        registerScore.setScale(1);
     });
 
-    register.on('pointerdown', () => {
+    registerScore.on('pointerdown', () => {
         // Handle register button click - should register the score on the blockchain calling the smart contract
     });
 
-    connectButton.on('pointerover', () => {
+    connect.on('pointerover', () => {
         // Highlight the button when the mouse is over it
-        connectButton.setScale(1.1);
+        connect.setScale(1.1);
     });
 
-    connectButton.on('pointerout', () => {
+    connect.on('pointerout', () => {
         // Reset the button's scale when the mouse is out
-        connectButton.setScale(1);
+        connect.setScale(1);
     });
 
-    connectButton.on('pointerdown', () => {
+    connect.on('pointerdown', () => {
         // Handle connect button click - should propmt the user to connect the wallet
     });
 

@@ -71,7 +71,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.xpReward = 15;
                 this.damage = 1;
                 this.dodgeModifier = 1.2;
-                this.setScale(2.5);
+                this.setScale(2.8);
                 break;
             case EnemyType.Type3:
                 this.hitpoints = 7;
@@ -83,14 +83,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 break;
         }
         
-    }
-
-    receiveDamage(damage) {
-        this.hitpoints -= damage;
-
-        if (this.hitpoints <= 0) {
-            this.destroy();
-        }
     }
 }
 
@@ -130,9 +122,6 @@ const spawnEnemy = (scene, currentTime) => {
         const enemyType = Phaser.Math.Between(EnemyType.Type1, EnemyType.Type3);
         const enemy = new Enemy(scene, spawnX, spawnY, enemyType);
         enemy.anims.play('enemy' + enemyType, true);
-        enemy.setData('speed', enemy.speed);
-        enemy.setData('damage', enemy.damage);
-        enemy.setData('dodgeModifier', enemy.dodgeModifier);
         scene.enemiesGroup.add(enemy);
     }
 };
@@ -140,8 +129,8 @@ const spawnEnemy = (scene, currentTime) => {
 const trackPlayerAndMove = (scene, enemiesGroup, projectilesGroup) => {
     enemiesGroup.getChildren().forEach((enemy) => {
         const player = scene.player;
-        const speed = enemy.getData('speed');
-        const dodgeModifier = enemy.getData('dodgeModifier') || 1.0;
+        const speed = enemy.speed;
+        const dodgeModifier = enemy.dodgeModifier || 1.0;
 
         const angleToPlayer = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
         const dodgeAngleOffset = Math.PI / 2;

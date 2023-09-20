@@ -87,7 +87,7 @@ const playProjectileSound = () => {
 
 class Projectile extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type, damageMultiplier) {
-        super(scene, x, y, 'projectile' + type, damageMultiplier);
+        super(scene, x, y, 'projectile' + type);
         scene.add.existing(this);
         scene.physics.add.existing(this);
         this.setCollideWorldBounds(false);

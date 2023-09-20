@@ -6,6 +6,7 @@ class PauseMenu extends Phaser.Scene {
     }
 
     preload() {
+        this.load.spritesheet('resumeButton', './src/assets/images/buttons/resumeButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('playButton', './src/assets/images/buttons/playButton.png', {frameWidth: 300, frameHeight: 100});
         this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
@@ -13,9 +14,21 @@ class PauseMenu extends Phaser.Scene {
 
     create() {
         // Get the width and height of the game config (screen dimensions)
-        const screenWidth = window.innerWidth
-        const screenHeight = window.innerHeight
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
     
+        // Resume the game from where it was paused
+        const resumeButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 100, 'resumeButton');
+        resumeButton.setScale(1.2);
+        this.anims.create({
+            key: 'resumeButton',
+            frames: this.anims.generateFrameNumbers('resumeButton', { start: 0, end: 9 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        resumeButton.anims.play('resumeButton', true);
+        resumeButton.setInteractive();
+
         // Start Game button
         const playButton = this.add.sprite(screenWidth / 2, screenHeight / 2, 'playButton');
         playButton.setScale(1.2);
@@ -26,7 +39,7 @@ class PauseMenu extends Phaser.Scene {
             repeat: -1
         });
         playButton.anims.play('playButton', true);
-        playButton.setInteractive(); // Make the button interactive
+        playButton.setInteractive();
     
         // Options button
         const optionsButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'optionsButton');
@@ -51,6 +64,22 @@ class PauseMenu extends Phaser.Scene {
         connectButton.setInteractive();
     
         // Button interactions
+        resumeButton.on('pointerover', () => {
+            // Highlight the button when the mouse is over it
+            resumeButton.setScale(1.1);
+        });
+
+        resumeButton.on('pointerout', () => {
+            // Reset the button's scale when the mouse is out
+            resumeButton.setScale(1);
+        });
+
+        resumeButton.on('pointerdown', () => {
+            // Resume the game
+            this.scene.resume('Game');
+            this.scene.stop();
+        });
+
         playButton.on('pointerover', () => {
             // Highlight the button when the mouse is over it
             playButton.setScale(1.1);
@@ -64,7 +93,7 @@ class PauseMenu extends Phaser.Scene {
         playButton.on('pointerdown', () => {
             // Handle Start Game button click
             //Restart the game
-            this.scene.launch('Game');
+            this.scene.resume('Game');
             this.scene.stop();
         });
     

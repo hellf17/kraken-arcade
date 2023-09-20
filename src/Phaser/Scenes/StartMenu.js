@@ -89,8 +89,8 @@ class StartMenu extends Phaser.Scene {
     });
 
     playButton.on('pointerdown', () => {
-        // Handle Start Game button click
         //music.stop();
+
         //Fade out the scene and start the game
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
@@ -113,7 +113,7 @@ class StartMenu extends Phaser.Scene {
         // Handle Options button click
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            this.scene.start('OptionsMenuScene');
+            this.scene.start('OptionsMenu');
             }
         )
     });
