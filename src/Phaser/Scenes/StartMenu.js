@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { connectToMetaMask, getOwnedKrakens, getOwnedMortis } from '../Classes/UI/Web3Connection.js';
 
 class StartMenu extends Phaser.Scene {
     constructor() {
@@ -67,6 +68,7 @@ class StartMenu extends Phaser.Scene {
     optionsButton.setInteractive();
 
     // Connect Wallet button
+    const connectText = this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 210, 'Connect your Wallet to be able to play with your own Kraken and register your score at the leaderboard', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
     const connectButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 200, 'connectButton');
     this.anims.create({
         key: 'connectButton',
@@ -128,9 +130,28 @@ class StartMenu extends Phaser.Scene {
         connectButton.setScale(1);
     });
 
-    connectButton.on('pointerdown', () => {
-        // Handle connect button click - should propmt the user to connect the wallet
+    connectButton.on('pointerdown', async () => {
+        try {
+            // Calls the connectToMetaMask function from Web3Connection.js and connects the user to MetaMask; wait for completion
+            await connectToMetaMask();
+    
+            // After the user connects, get the list of owned Krakens and Mortis
+            this.krakensIds = await getOwnedKrakens();
+            this.mortisIds = await getOwnedMortis();
+    
+        } catch (error) {
+            console.error('Error connecting or fetching owned tokens:', error);
+            // Handle errors
+        }
     });
+
+    // Add a selector to display the user's Krakens and Mortis where the user can select the Kraken or Morti to play with
+    // It should only be active if the user is connected to MetaMask
+    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 300, 'Select your Player:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 330, 'Krakens:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 360, 'Mortis:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 390, 'Selected:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    
 
     }
 }

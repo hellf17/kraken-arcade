@@ -63,6 +63,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.setMaxVelocity(300, 300);
         this.setDrag(1000);
 
+        // Set FX padding and add shadow to player
+        this.preFX.setPadding(8)
+        this.preFX.addShadow(0, 0, 0.1, 1, b3b9d1)
+
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
                 this.hitpoints = 5;
@@ -81,7 +85,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.maxShield = 3;
                 break;
         }
-    }
+
+        // Add green aura to player if it has a shield
+        if (this.shield > 0) {
+            console.log("shield aura")
+            this.preFX.addGlow(328464).setActive(true); // Set active to true to make the glow visible
+
+            this.tweens.add({
+                targets: fx,
+                outerStrength: 10,
+                yoyo: true,
+                loop: -1,
+                ease: 'sine.inout'
+            });
+    
+        } else {
+            this.preFX.addGlow().setActive(false);
+        }
+
+        // Add shine to player if it has an ultimate ready
+        console.log("ultimate aura")
+        if (this.isPlayerUltimateReady) {
+            this.preFX.addShine(0.5, 1, 3, true).setActive(true);
+            
+        } else {
+            this.preFX.addShine().setActive(false);
+        }
+}
 
     setupKeys (scene){
         this.keys = scene.input.keyboard.addKeys({  

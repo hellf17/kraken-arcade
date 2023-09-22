@@ -1,19 +1,14 @@
-import { ffmpeg } from "ffmpeg";
-import { opencv4 } from "opencv4"
+import { ffmpeg } from "ffmpeg.js";
+import { opencv4nodejs } from "opencv4nodejs";
+import { getOwnedKrakens, getOwnedMortis } from "./Web3Connection";
 
 // Get the user selected kraken and mortis images
-function const getPlayerImages (address, tokenId, type) {
+async function getPlayerImages () {
   const imageBaseUrl = 'https://img.pseudo.trident.game/';
-  const tokenID = tokenId;
+  const selectedKraken = getOwnedKrakens();
+  const selectedMorti = getOwnedMortis();
   const mp4Url = '${imageBaseUrl}${tokenID}/anim.mp4';
-  const type = [
-    type0 = 'Kraken',
-    type1 = 'Mortimarrow'
-  ];
 
-  const ffmpeg = require('ffmpeg.js/ffmpeg');
-  const cv = require('opencv4nodejs');
-  
   // Define the output folder for individual PNG frames
   const outputFolder = 'playerFrames';
   
@@ -48,7 +43,7 @@ function const getPlayerImages (address, tokenId, type) {
           frames.push(frame);
         }
       }
-  
+
       // Assuming all frames have the same dimensions, use the dimensions of the first frame
       const frameWidth = frames[0].cols;
       const frameHeight = frames[0].rows;
@@ -84,3 +79,4 @@ function const getPlayerImages (address, tokenId, type) {
     .catch((error) => {
       console.error("Error:", error);
     });
+  }

@@ -295,7 +295,7 @@ export default class Game extends Phaser.Scene
         }
     };
 
-    handlePlayerTimeSurvived(currentTime) { //need to properly implement this to ignore the loading time
+    handlePlayerTimeSurvived(currentTime) {  //need to properly implement this to ignore the loading time
         if (this.player.isPlayerAlive && !this.scene.isPaused('Game')) {
             const elapsedTime = currentTime - this.lastTimeSurvivedUpdate;
 
@@ -368,6 +368,12 @@ const config = {
         arcade: {
           debug: false,
           gravity: {y: 0}
+        }
+    },
+    fx: {
+        glow: {
+            distance: 20,
+            quality: 0.1
         }
     },
     callbacks: { postBoot: (game) => { game.scene.dump() } }
