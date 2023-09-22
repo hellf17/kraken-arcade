@@ -32,6 +32,11 @@ const loadHearts = (scene) => {
         'heartTransparent',
         'src/assets/images/spritesheets/UI/heart_transparent_spritesheet.png',
         { frameWidth: 110, frameHeight: 100, spacing: 0 });
+    
+    scene.load.spritesheet(
+        'shield',
+        'src/assets/images/spritesheets/UI/shieldSpritesheet.png',
+        { frameWidth: 110, frameHeight: 100, spacing: 0 });
 };
 
 const createHeartAnimation = (scene) => {
@@ -64,6 +69,14 @@ const createHeartAnimation = (scene) => {
     scene.anims.create({
         key: 'heartTransparent',
         frames: scene.anims.generateFrameNames('heartTransparent', { start: 0, end: 4 }),
+        frameRate: 5,
+        repeat: -1,
+        loop: true
+        });
+
+    scene.anims.create({
+        key: 'shield',
+        frames: scene.anims.generateFrameNames('shield', { start: 0, end: 4 }),
         frameRate: 5,
         repeat: -1,
         loop: true
@@ -150,6 +163,38 @@ const removeUiHeart = (scene, enemyDamage) => {
     }
 }
 
+const addShield = (scene, shield) => {
+    const shieldSpacing = 32;
+
+    // Draw Shield based on the heart shield value if shield is not empty
+    if (scene.shieldUiGroup.getChildren().length > 0) {
+        const lastShield = scene.shieldUiGroup.getChildren()[scene.shieldUiGroup.getChildren().length - 1];
+        
+        for (let i = 0; i < shield; i++) {
+            const shieldX = lastShield.x + heartSpacing;
+            const shield = scene.add.sprite(shieldX, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.19);
+            shield.setFrame(0); // Set the first frame
+            shield.anims.play('shield', true);
+            scene.shieldUiGroup.add(shield);
+        }
+
+    } else { //Draw only the first shield if shield is empty
+        const shield = scene.add.sprite(30, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.19);
+        shield.setFrame(0); // Set the first frame
+        shield.anims.play('shield', true);
+        scene.shieldUiGroup.add(shield);
+        }
+}
+
+const removeUiShield = (scene, enemyDamage) => {
+    for (let i = 0; i < enemyDamage; i++) {
+        if (scene.shieldUiGroup.getChildren().length > 0) {
+            const lastShield = scene.shieldUiGroup.getChildren()[scene.shieldUiGroup.getChildren().length - 1];
+            lastShield.destroy();
+        }
+    }
+}
+
 const spawnHearts = (scene, currentTime) => {
     if (currentTime - scene.lastHeartSpawnTime > scene.heartSpawnInterval && scene.heartGameGroup.getChildren().length < scene.maxHeartsOnScreen) {
         scene.lastHeartSpawnTime = currentTime;
@@ -174,4 +219,4 @@ const spawnHearts = (scene, currentTime) => {
 };
 
 
-export { Heart, loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, spawnHearts };
+export { Heart, loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, addShield, removeUiShield, spawnHearts };

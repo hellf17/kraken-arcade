@@ -1,8 +1,10 @@
 import * as Phaser from 'phaser';
 
+
 class PauseMenu extends Phaser.Scene {
     constructor() {
         super({ key: 'PauseMenu'});
+
     }
 
     preload() {
@@ -13,6 +15,9 @@ class PauseMenu extends Phaser.Scene {
     }
 
     create() {
+        // Get the Game scene
+        this.gameScene = this.scene.get('Game');
+
         // Get the width and height of the game config (screen dimensions)
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
@@ -93,7 +98,7 @@ class PauseMenu extends Phaser.Scene {
         playButton.on('pointerdown', () => {
             // Handle Start Game button click
             //Restart the game
-            this.scene.resume('Game');
+            this.scene.start('Game');
             this.scene.stop();
         });
     
@@ -126,7 +131,13 @@ class PauseMenu extends Phaser.Scene {
             // Handle connect button click - should propmt the user to connect the wallet
         });
     
-        }
     }
+
+    update() {
+        // Update the lastTimeSurvivedUpdated in the Game scene with the current time
+        const currentTime = this.time.now;
+        this.gameScene.handlePlayerTimeSurvived(currentTime) 
+    }
+}
     
 export default PauseMenu;

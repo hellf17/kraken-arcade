@@ -70,6 +70,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.baseVelocity = 150;
                 this.xpTracker = 0;
                 this.shield = 0;
+                this.maxShield = 2;
                 break;
             case playerType.Type2:
                 this.hitpoints = 4;
@@ -77,6 +78,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.baseVelocity = 160;
                 this.xpTracker = 0;
                 this.shield = 0;
+                this.maxShield = 3;
                 break;
         }
     }
@@ -91,29 +93,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             pause: Phaser.Input.Keyboard.KeyCodes.ESC
             });
         this.pointer = scene.input.activePointer
-    }
-
-    timeTracker(scene) {
-        if (this.isPlayerAlive) {
-            const currentTime = scene.time.now;
-            
-            if (this.lastTimeSurvivedUpdate === undefined) {
-                this.lastTimeSurvivedUpdate = currentTime;
-            }
-            
-            const elapsedTime = currentTime - this.lastTimeSurvivedUpdate;
-            this.timeSurvived += elapsedTime;
-            this.lastTimeSurvivedUpdate = currentTime;
-            
-            // Calculate the number of additional XP the player should earn
-            const additionalXP = Math.floor(this.timeSurvived / 10000);
-    
-            // Check if the player has earned more XP
-            if (additionalXP > this.xpTracker) {
-                this.xpTracker = additionalXP;
-            }
-        }
-    }    
+    }  
 
     movePlayer () {    
         // Player movements
