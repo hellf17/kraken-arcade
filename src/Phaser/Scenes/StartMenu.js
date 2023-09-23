@@ -68,7 +68,6 @@ class StartMenu extends Phaser.Scene {
     optionsButton.setInteractive();
 
     // Connect Wallet button
-    const connectText = this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 210, 'Connect your Wallet to be able to play with your own Kraken and register your score at the leaderboard', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
     const connectButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 200, 'connectButton');
     this.anims.create({
         key: 'connectButton',
@@ -123,6 +122,9 @@ class StartMenu extends Phaser.Scene {
     connectButton.on('pointerover', () => {
         // Highlight the button when the mouse is over it
         connectButton.setScale(1.1);
+         // Show connect text when the mouse is over it
+        connectText = this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 210, 'Connect your Wallet to be able to play with your own Kraken and register your score at the leaderboard', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+
     });
 
     connectButton.on('pointerout', () => {
@@ -141,10 +143,12 @@ class StartMenu extends Phaser.Scene {
     
         } catch (error) {
             console.error('Error connecting or fetching owned tokens:', error);
-            // Handle errors
+            // Pop up an alert to the user
+            window.alert('Error connecting or fetching owned tokens:', error);
         }
     });
 
+   
     // Add a selector to display the user's Krakens and Mortis where the user can select the Kraken or Morti to play with
     // It should only be active if the user is connected to MetaMask
     this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 300, 'Select your Player:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
