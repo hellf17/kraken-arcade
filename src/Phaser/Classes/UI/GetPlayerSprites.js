@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const baseVideoUrl = 'https://img.pseudo.trident.game';
 
 // Function to process each frame of the video
-async function processFrames(tokenId) {
+async function getPlayerSprites(tokenId) {
   const video = document.createElement('video');
   video.src = `${baseVideoUrl}/${tokenId}.mp4`;
   video.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
@@ -89,4 +89,4 @@ function loadImage(src) {
   });
 }
 
-export default {processFrames}; // Receives the token ID and returns the spritesheet
+export default {getPlayerSprites}; // Receives the token ID and returns the spritesheet
