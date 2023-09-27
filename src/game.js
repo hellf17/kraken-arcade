@@ -1,10 +1,10 @@
 import * as Phaser from 'phaser';
-import { playerType ,createPlayer, loadPlayer, Player } from './player';
-import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, Projectile} from './projectile';
+import { createPlayer, loadPlayer } from './player';
+import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } from './enemy';
-import { Heart, loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, addShield, removeUiShield, spawnHearts } from './heart';
-import { loadDebuffs, createDebuffsAnimation, Debuffs, spawnDebuffs } from './debuffs';
-import { loadBuffs, createBuffsAnimation, Buffs, spawnBuffs } from './buffs';
+import { loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, addShield, removeUiShield, spawnHearts } from './heart';
+import { loadDebuffs, createDebuffsAnimation, spawnDebuffs } from './debuffs';
+import { loadBuffs, createBuffsAnimation, spawnBuffs } from './buffs';
 import EndMenu from './Phaser/Scenes/EndMenu';
 import StartMenu from './Phaser/Scenes/StartMenu';
 import OptionsMenu from './Phaser/Scenes/OptionsMenu';
@@ -19,6 +19,7 @@ export default class Game extends Phaser.Scene
 
         //Initialize player variables
         this.playerType = 0; // Initial player type - 0 for Kraken, 1 for Mortis (maybe add more later)
+        this.selectedTokenId = 420420; // Change if the player selects a different Kraken; 420420 is the default Kraken/Morti
         this.maxUiHearts = 10; // Player max hitpoints with buffs
         this.lastTimeSurvivedUpdate = 0; // Initialize to 0 the last time the player's timeSurvived was updated
 
@@ -46,6 +47,12 @@ export default class Game extends Phaser.Scene
         this.lastDebuffSpawnTime = 0; // Initialize to 0
         
     }
+
+/*     init (data)
+    {
+        this.playerType = data.playerType;
+        this.selectedTokenId = data.selectedTokenId;
+    } */
 
     preload (){
         this.load.image('background', 'src/assets/images/backgrounds/landscape.png')
@@ -87,8 +94,9 @@ export default class Game extends Phaser.Scene
         backgroundSound.play();
 
         //Create player and animates it
-        this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType) // Create player object
-        this.player.anims.play(('player' + this.playerType), true) 
+        this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType, this.selectedTokenId) // Create player object
+        console.log('player' + this.playerType + this.selectedTokenId)
+        this.player.anims.play(('player' + this.playerType + this.selectedTokenId), true) 
 
         //Create player inputs
         this.player.setupKeys(this); // Setup player inputs
@@ -122,7 +130,6 @@ export default class Game extends Phaser.Scene
         //Draw the UI hearts
         drawUiMaxHearts(this); // Draw the empty hearts equal to the player's max hitpoints
         drawUiHearts(this); // Draw the filled hearts equal to the player's hitpoints
-                        
                 
         //Create and draw the XP tracker text
         this.xpTrackerText = this.add.text(screenWidth - 150, 20, 'XP: 0', {

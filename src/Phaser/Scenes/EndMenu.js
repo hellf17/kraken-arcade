@@ -160,10 +160,15 @@ class EndMenu extends Phaser.Scene {
         connect.setScale(1);
     });
 
-    connect.on('pointerdown', () => {
-        // Handle connect button click - should propmt the user to connect the wallet
+    connect.on('pointerdown', async () => {
+        try {
+            await connectToMetaMask();
+            }
+        catch (error) {
+            console.log(error);
+            window.alert("error", error.message);
+            }
     });
-
     }
 }
 

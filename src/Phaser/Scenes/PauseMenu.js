@@ -9,9 +9,6 @@ class PauseMenu extends Phaser.Scene {
 
     preload() {
         this.load.spritesheet('resumeButton', './src/assets/images/buttons/resumeButton.png', { frameWidth: 300, frameHeight: 100 });
-        this.load.spritesheet('playButton', './src/assets/images/buttons/playButton.png', {frameWidth: 300, frameHeight: 100});
-        this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png', { frameWidth: 300, frameHeight: 100 });
-        this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
     }
 
     create() {
@@ -127,8 +124,14 @@ class PauseMenu extends Phaser.Scene {
             connectButton.setScale(1);
         });
     
-        connectButton.on('pointerdown', () => {
-            // Handle connect button click - should propmt the user to connect the wallet
+        connect.on('pointerdown', async () => {
+            try {
+                await connectToMetaMask();
+                }
+            catch (error) {
+                console.log(error);
+                window.alert("error", error.message);
+                }
         });
     
     }

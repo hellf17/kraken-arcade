@@ -9,26 +9,23 @@ const playerType = {
 //Load player spritesheet
 const loadPlayer = (scene, type) => {
     scene.load.spritesheet(
-        'player' + type,
-        'src/assets/images/spritesheets/kraken-player/kraken1-idle-sheet.png',
-        { frameWidth: 150, frameHeight: 150, spacing: 33 }
+        'player' + type + '420420',
+        'src/assets/images/spritesheets/kraken-player/kraken-idle-sheet.png', // Kraken spritesheet
+        { frameWidth: 510, frameHeight: 500 }
     );
 };
 
-const createPlayer = (scene, screenX, screenY, type) => {
-    const player = new Player(scene, screenX, screenY, type);
-    createAnimations(scene, type);
-
-    // Add a property to the player to store its original facing direction
-    player.originalFacing = 1; // 1 for right, -1 for left
+const createPlayer = (scene, screenX, screenY, type, tokenId) => {
+    const player = new Player(scene, screenX, screenY, type, tokenId);
+    createAnimations(scene, type, tokenId);
 
     return player;
 };
 
-const createAnimations = (scene, type) => {
+const createAnimations = (scene, type, tokenId) => {
     scene.anims.create({
-        key: 'player' + type,
-        frames: scene.anims.generateFrameNames('player' + type, { start: 0, end: 9 }),
+        key: 'player' + type + tokenId,
+        frames: scene.anims.generateFrameNames('player' + type + tokenId, { start: 0, end: 9 }),
         frameRate: 10,
         repeat: -1,
         yoyo: true
@@ -36,8 +33,8 @@ const createAnimations = (scene, type) => {
 };
 
 class Player extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, type) {
-        super(scene, x, y, 'player' + type);
+    constructor(scene, x, y, type, tokenId) {
+        super(scene, x, y, 'player' + type + tokenId);
         scene.add.existing(this);
         scene.physics.add.existing(this);
         scene.physics.world.enable(this);
@@ -56,16 +53,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.enemyKills = 0;
         
         this.setCollideWorldBounds(true);
-        this.setDepth(3);
+        this.setDepth(1);
         this.body.setSize(50, 100);
         this.body.setOffset(50, 0);
-        this.setScale(1.15);
+        this.setScale(0.3);
         this.setMaxVelocity(300, 300);
         this.setDrag(1000);
 
-        // Set FX padding and add shadow to player
+         // Set FX padding and add shadow to player
         this.preFX.setPadding(8)
-        this.preFX.addShadow(0, 0, 0.1, 1, b3b9d1)
+        this.preFX.addShadow(0, 0, 0.1, 1, 727686)
+        this.preFX.addPixelate();
 
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
@@ -86,7 +84,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 break;
         }
 
-        // Add green aura to player if it has a shield
+         // Add green aura to player if it has a shield
         if (this.shield > 0) {
             console.log("shield aura")
             this.preFX.addGlow(328464).setActive(true); // Set active to true to make the glow visible
@@ -111,7 +109,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         } else {
             this.preFX.addShine().setActive(false);
         }
-}
+    } 
 
     setupKeys (scene){
         this.keys = scene.input.keyboard.addKeys({  

@@ -1,92 +1,116 @@
-// Define the canvas and context for image processing
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-
 // Load the MP4 video from the original URL
-const baseVideoUrl = 'https://img.pseudo.trident.game';
+const baseVideoUrlKrakens = 'https://img.pseudo.trident.game';
+
+// Function to get only the first frame of the video of an array of tokens IDs
+async function getFirstFrame(tokenId) {
+  const video = document.createElement('video');
+  video.src = `${baseVideoUrlKrakens}/${tokenId}/anim.mp4`;
+  video.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
+  video.preload = 'auto';
+
+  // Wait for the video frames to be ready
+  await new Promise(resolve => video.addEventListener('loadeddata', resolve));
+
+  // Create a temporary canvas for processing
+  var tempCanvas = document.createElement('canvas');
+  var tempCtx = tempCanvas.getContext('2d');
+  tempCanvas.width = video.videoWidth;
+  tempCanvas.height = video.videoHeight;
+
+  // Draw the first frame on the temporary canvas
+  tempCtx.drawImage(video, 0, 0);
+
+  // Convert the frame to PNG
+  const frameDataUrl = tempCanvas.toDataURL('image/png');
+
+  // Return the processed frame to the caller
+  return frameDataUrl;
+}
 
 // Function to process each frame of the video
-async function getPlayerSprites(tokenId) {
+async function getKrakenSprites(tokenId) {
   const video = document.createElement('video');
-  video.src = `${baseVideoUrl}/${tokenId}.mp4`;
+  video.src = `${baseVideoUrlKrakens}/${tokenId}/anim.mp4`;
   video.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
   video.preload = 'auto';
 
   const frameCount = 10; // Number of frames in your animation
   const frames = [];
 
+  // Wait for the video frames to be ready
+  await new Promise(resolve => video.addEventListener('loadeddata', resolve));
+
   // Array to store the mask images for each frame
   const maskImages = [
-    'kraken_mask1.png',
-    'kraken_mask2.png',
-    'kraken_mask3.png',
-    'kraken_mask4.png',
-    'kraken_mask5.png',
-    'kraken_mask6.png',
-    'kraken_mask7.png',
-    'kraken_mask8.png',
-    'kraken_mask9.png',
-    'kraken_mask10.png',
+    '../../../assets/Mask/kraken_mask0.png',
+    '../../../assets/Mask/kraken_mask1.png',
+    '../../../assets/Mask/kraken_mask2.png',
+    '../../../assets/Mask/kraken_mask3.png',
+    '../../../assets/Mask/kraken_mask4.png',
+    '../../../assets/Mask/kraken_mask5.png',
+    '../../../assets/Mask/kraken_mask6.png',
+    '../../../assets/Mask/kraken_mask7.png',
+    '../../../assets/Mask/kraken_mask8.png',
+    '../../../assets/Mask/kraken_mask9.png',
   ];
 
-  // Preload mask images (you can skip this step if the masks are already loaded)
+  // Preload mask images
   const maskData = await Promise.all(maskImages.map(loadImage));
 
   for (let i = 0; i < frameCount; i++) {
     video.currentTime = (i / frameCount) * video.duration;
     await new Promise(resolve => video.addEventListener('seeked', resolve));
 
-    // Apply the preloaded mask image to the frame
-    const maskImage = maskData[i];
-    const frameDataUrl = convertFrameToPNG(video, maskImage);
+    // Create a temporary canvas for processing
+    var tempCanvas = document.createElement('canvas');
+    var tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = video.videoWidth;
+    tempCanvas.height = video.videoHeight;
+
+    // Draw the mask frame on the temporary canvas
+    tempCtx.drawImage(maskData[i], 0, 0);
+
+    // Apply the mask image as a clipping mask
+    tempCtx.globalCompositeOperation = 'source-in';
+    tempCtx.drawImage(video, 0, 0);
+
+    // Convert the frame to PNG
+    const frameDataUrl = tempCanvas.toDataURL('image/png');
     frames.push(frameDataUrl);
   }
 
-  // Combine frames into a spritesheet
-  const spritesheet = new Spritesheet({
-    images: frames,
-    width: canvas.width,
-    height: canvas.height,
-  });
-
-  return new Promise((resolve, reject) => {
-    spritesheet.compile((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        // `data` contains the spritesheet image and data
-        resolve(data);
-      }
-    });
-  });
+  // Return the processed frames to the caller
+  return frames;
 }
 
-// Function to convert a frame to PNG with a clipping mask
-function convertFrameToPNG(frame, maskImage) {
-  canvas.width = frame.videoWidth;
-  canvas.height = frame.videoHeight;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(frame, 0, 0);
-
-  // Apply the clipping mask
-  ctx.globalCompositeOperation = 'source-in';
-  ctx.drawImage(maskImage, 0, 0);
-
-  // Convert the frame to PNG
-  const pngDataUrl = canvas.toDataURL('image/png');
-  return pngDataUrl;
-}
-
-// Function to load an image asynchronously
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
+  // Function to load an image asynchronously
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = src;
     img.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
     img.onload = () => resolve(img);
     img.onerror = (error) => reject(error);
-  });
-}
+    });
+  }
 
-export default {getPlayerSprites}; // Receives the token ID and returns the spritesheet
+  export { getKrakenSprites, getFirstFrame };
+
+  
+/*   // Debug: Print the processed frames
+  frames.forEach((frame, index) => {
+  printDebugFrame(frame, `Frame ${index + 1}`);
+  });
+  }
+
+  // Function to print debug frames (for frame only)
+  function printDebugFrame(frame, frameLabel) {
+
+  // Create an image element to display the debug frame
+  const debugImg = document.createElement('img');
+  debugImg.src = frame;
+
+  // Add the debug image to the document
+  document.body.appendChild(debugImg);
+  console.log(`${frameLabel} printed`); 
+  }*/

@@ -1,35 +1,40 @@
-import { ethers } from "ethers";
-import { krakenABI } from "../../../solidity/abi/kraken_abi.json";
-import { mortiABI } from "../../../solidity/abi/morti_abi.json";
-import { leaderboardABI } from "../../../solidity/abi/leaderboard_abi.json";
+import {ethers} from 'ethers/dist/ethers.esm';
+import { krakenABI } from '../../../solidity/abi/kraken_abi';
 
 // Define global variables
 let provider;
 let signer;
 let userAddress;
 
-// Define your contract addresses
-const krakenAddress = "0x668567f4f21a3a14fbca3538b4bfecdebee838fb";
-const mortiAddress = "0x77a64f91ae5a833847474f1016dd8f56530273a9";
-const leaderboardAddress = "";
+// Define the contracts addresses
+let krakenAddress = "0x668567f4f21a3a14fbca3538b4bfecdebee838fb";
+// const mortiAddress = "0x77a64f91ae5a833847474f1016dd8f56530273a9";
+// const leaderboardAddress = "";
 
 // Create contract objects
-const krakenContract = new ethers.Contract(krakenAddress, krakenABI, provider);
-const mortiContract = new ethers.Contract(mortiAddress, mortiABI, provider);
-const leaderboardContract = new ethers.Contract(leaderboardAddress, leaderboardABI, provider);
+let krakenContract;
+let mortiContract;
+let leaderboardContract;
 
-// Connect to MetaMask and call userConnected when the user connects
+// Connect to MetaMask
 async function connectToMetaMask() {
   try {
     // Create a Web3Provider with MetaMask
+    console.log('Connecting to MetaMask...');
     provider = new ethers.providers.Web3Provider(window.ethereum);
 
     // Request Ethereum wallet access
     await window.ethereum.request({ method: 'eth_requestAccounts' });
 
     // Get the user's address
+    console.log('Connected to MetaMask!');
+    console.log('Fetching user address...');
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
+
+    // Create contract objects
+    console.log('Fetching contract data...');
+    krakenContract = new ethers.Contract(krakenAddress, krakenABI, provider);
 
   } catch (error) {
     console.error('Error connecting to wallet:', error.message);
@@ -40,12 +45,15 @@ async function connectToMetaMask() {
 async function getOwnedKrakens() {
   try {
     // Check if the user is connected
-    if (!provider) {
+    if (provider == null) {
       console.error('User is not connected to a wallet.');
       return [];
     }
 
     // Get the list of Krakens and Mortis owned by the user
+    console.log('Fetching owned tokens...');
+    console.log(userAddress);
+    console.log(krakenContract);
     const ownedKrakens = await krakenContract.tokensOfOwner(userAddress);
 
     // Return the list of owned tokens
@@ -53,8 +61,8 @@ async function getOwnedKrakens() {
 
   } catch (error) {
     console.error('Error fetching owned tokens:', error.message);
-    // Handle errors
-    return [];
+    // print error message
+    return [error];
   }
 }
 
@@ -99,9 +107,4 @@ async function registerScore(score) {
 }
         
 
-export { connectToMetaMask, getOwnedKrakens, getOwnedMortis, registerScore };
-
-
-
-
-  
+export { connectToMetaMask, getOwnedKrakens, registerScore };

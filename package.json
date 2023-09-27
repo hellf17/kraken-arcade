@@ -20,13 +20,19 @@
     "homepage": "https://github.com/photonstorm/phaser3-typescript-project-template#readme",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^24.0.1",
-        "@rollup/plugin-node-resolve": "^15.0.2",
+        "@rollup/plugin-node-resolve": "^15.2.1",
         "@rollup/plugin-replace": "^5.0.2",
         "@rollup/plugin-terser": "^0.4.0",
         "@rollup/plugin-typescript": "^11.1.0",
         "phaser": "^3.60.0",
         "rollup": "^3.20.2",
+        "rollup-plugin-polyfill-node": "^0.12.0",
         "rollup-plugin-serve": "^2.0.2",
         "typescript": "^5.0.3"
+    },
+    "dependencies": {
+        "ethers": "^5.7.2",
+        "json-reader-writer": "^1.0.4",
+        "websocket": "^1.0.34"
     }
 }
