@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { connectToMetaMask, getOwnedKrakens, getOwnedMortis } from '../Classes/UI/Web3Connection.js';
+import { getPlayerSprites } from '../Classes/UI/GetPlayerSprites.js';
 
 class StartMenu extends Phaser.Scene {
     constructor() {
@@ -148,16 +149,37 @@ class StartMenu extends Phaser.Scene {
         }
     });
 
-   
-    // Add a selector to display the user's Krakens and Mortis where the user can select the Kraken or Morti to play with
-    // It should only be active if the user is connected to MetaMask
-    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 300, 'Select your Player:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
-    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 330, 'Krakens:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
-    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 360, 'Mortis:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
-    this.add.text(screenWidth / 2 - 100, screenHeight / 2 + 390, 'Selected:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    // Create a list of Kraken token IDs
+    const krakensList = this.add.text(screenWidth / 2 - 50, screenHeight / 2 + 250, 'Krakens:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    for (let i = 0; i < this.krakensIds.length; i++) {
+        const tokenId = this.krakensIds[i];
+        const krakenText = this.add.text(screenWidth / 2 + 150, screenHeight / 2 + 360 + (i * 30), tokenId, { fontFamily: 'Minecraft', fontSize: 16, color: '#ffffff' });
+        
+        // Make each token ID clickable
+        krakenText.setInteractive();
     
-
+        // Add a click event handler to select this Kraken token ID
+        krakenText.on('pointerdown', () => {
+            selected_tokenId = tokenId; // Set the selected_tokenId to the clicked token ID
+            getPlayerSprites(selected_tokenId)
+        });
     }
-}
+    
+    // Create a list of Mortis token IDs
+    const mortisList = this.add.text(screenWidth / 2 + 50, screenHeight / 2 + 250, 'Mortis:', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+    for (let i = 0; i < this.mortisIds.length; i++) {
+        const tokenId = this.mortisIds[i];
+        const mortisText = this.add.text(screenWidth / 2 + 300, screenHeight / 2 + 360 + (i * 30), tokenId, { fontFamily: 'Minecraft', fontSize: 16, color: '#ffffff' });
+    
+        // Make each token ID clickable
+        mortisText.setInteractive();
+    
+        // Add a click event handler to select this Mortis token ID
+        mortisText.on('pointerdown', () => {
+            selected_tokenId = tokenId; // Set the selected_tokenId to the clicked token ID
+            getPlayerSprites(selected_tokenId)
+            });
+        }
+    }
 
 export default StartMenu;
