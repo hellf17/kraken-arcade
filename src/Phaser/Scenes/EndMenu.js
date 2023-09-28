@@ -11,6 +11,7 @@ class EndMenu extends Phaser.Scene {
         this.xp = data.xp;
         this.timer = data.timer;
         this.kills = data.kills;
+        this.deaths = data.deaths;
     }
 
 
@@ -27,7 +28,7 @@ class EndMenu extends Phaser.Scene {
     const screenHeight = this.cameras.main.height;
 
     // Set's the background image
-    const background = this.add.sprite(screenWidth / 2, screenHeight / 2, 'gameOverBackground');
+    const background = this.add.sprite(screenWidth / 2, screenHeight / 2, 'gameOverBackground' + this.deaths);
     // Insert a red filter to the background
     background.setTint(0xff0000);
     

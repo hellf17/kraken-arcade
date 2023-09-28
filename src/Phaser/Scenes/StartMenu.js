@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { connectToMetaMask, getOwnedKrakens } from '../Classes/UI/Web3Connection.js';
+import { connectToMetaMask, getOwnedKrakens, getOwnedMortis } from '../Classes/UI/Web3Connection.js';
 import { getKrakenSprites, getFirstFrame } from '../Classes/UI/GetPlayerSprites.js';
 
 class StartMenu extends Phaser.Scene {
@@ -251,8 +251,9 @@ class StartMenu extends Phaser.Scene {
             // Add the frames to the Phaser cache as textures
             console.log(`Adding the sprite for Kraken ID ${this.selectedKraken} to the cache...`);
             frames.forEach((frame, index) => {
-                this.textures.addImage(`player + ${this.selectedKraken} + ${index + 1}`, frame);
-                this.scene.load.image(`player + ${this.selectedKraken} + ${index + 1}`, frame);
+                console.log(`Adding frame ${index}...`);
+                this.textures.addImage(`player + ${this.selectedPlayerType} + ${this.selectedKraken} + ${index}`, frame);
+                this.scene.scene.load.image(`player + ${this.selectedPlayerType} + ${this.selectedKraken} + ${index}`, frame);
             });
  
             // Show a message to the user if successful

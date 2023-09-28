@@ -99,14 +99,14 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
                 this.type = heartType.Type1;
                 break;
             case heartType.Type2:
-                this.health = 2;
+                this.health = 1;
                 this.shield = 1;
                 this.maxHitpointsIncrease = 0;
                 this.type = heartType.Type2;
                 break;
             case heartType.Type3:
-                this.health = 1;
-                this.shield = 0;
+                this.health = 2;
+                this.shield = 2;
                 this.maxHitpointsIncrease = 1;
                 this.type = heartType.Type3;
                 break;
@@ -164,6 +164,7 @@ const removeUiHeart = (scene, enemyDamage) => {
 }
 
 const addShield = (scene, shield) => {
+    const centerX = scene.cameras.main.width / 2;
     const shieldSpacing = 32;
 
     // Draw Shield based on the heart shield value if shield is not empty
@@ -171,15 +172,16 @@ const addShield = (scene, shield) => {
         const lastShield = scene.shieldUiGroup.getChildren()[scene.shieldUiGroup.getChildren().length - 1];
         
         for (let i = 0; i < shield; i++) {
-            const shieldX = lastShield.x + heartSpacing;
-            const shield = scene.add.sprite(shieldX, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.19);
+            const shieldX = lastShield.x + shieldSpacing;
+            const shield = scene.add.sprite(shieldX, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.25);
             shield.setFrame(0); // Set the first frame
             shield.anims.play('shield', true);
             scene.shieldUiGroup.add(shield);
         }
 
     } else { //Draw only the first shield if shield is empty
-        const shield = scene.add.sprite(30, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.19);
+        const shieldX = centerX;
+        const shield = scene.add.sprite(shieldX, 60, 'shield').setScrollFactor(0).setDepth(1).setScale(0.25);
         shield.setFrame(0); // Set the first frame
         shield.anims.play('shield', true);
         scene.shieldUiGroup.add(shield);

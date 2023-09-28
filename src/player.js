@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser'
+import eventsCenter from './Phaser/Classes/UI/EventsCenter'
 import { playProjectileAnimation, playProjectileSound, createProjectile, Projectile } from './projectile';
 
 const playerType = {
@@ -17,7 +18,6 @@ const loadPlayer = (scene, type) => {
 
 const createPlayer = (scene, screenX, screenY, type, tokenId) => {
     const player = new Player(scene, screenX, screenY, type, tokenId);
-    createAnimations(scene, type, tokenId);
 
     return player;
 };
@@ -51,19 +51,18 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.xpTracker = 0;
         this.timeSurvived = 0;
         this.enemyKills = 0;
+        this.deathCounter = 0;
         
         this.setCollideWorldBounds(true);
         this.setDepth(1);
-        this.body.setSize(50, 100);
-        this.body.setOffset(50, 0);
+        this.body.setSize();
         this.setScale(0.3);
         this.setMaxVelocity(300, 300);
         this.setDrag(1000);
 
          // Set FX padding and add shadow to player
-        this.preFX.setPadding(8)
-        this.preFX.addShadow(0, 0, 0.1, 1, 727686)
-        this.preFX.addPixelate();
+        this.preFX.setPadding(6)
+        this.preFX.addPixelate(0.3);
 
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
@@ -102,8 +101,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         // Add shine to player if it has an ultimate ready
-        console.log("ultimate aura")
         if (this.isPlayerUltimateReady) {
+            console.log("ultimate shine")
             this.preFX.addShine(0.5, 1, 3, true).setActive(true);
             
         } else {
@@ -235,14 +234,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     kill() {
         this.isPlayerAlive = false;
+        this.deathCounter += 1;
+        this.eventsCenter.emit('updateDeathCount', this.deathCounter);
     
         // Stops the background music
         this.scene.sound.stopAll();
     
-        // Take a screenshot of the game
+        // Take a screenshot of the game;    
         this.scene.renderer.snapshot(image => {
             // Store the screenshot in a variable after transforming it into a texture
-            this.scene.textures.addBase64('gameOverBackground', image.src);
+            this.scene.textures.addBase64('gameOverBackground' + this.deathCounter, image.src);
         });
 
         // Start the EndMenu and passes Xp, time survived, enemy kills, and the screenshot with a fade effect
@@ -255,8 +256,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 xp: this.xpTracker,
                 timer: this.timeSurvived,
                 kills: this.enemyKills,
+                deaths: this.deathCounter
             }
         });
+
+        this.scene.scene.stop('Game');
     }
 
     update() {
@@ -286,4 +290,4 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
 
 
-export { playerType, createPlayer, loadPlayer, Player };
+export { playerType, createPlayer, createAnimations, loadPlayer, Player };

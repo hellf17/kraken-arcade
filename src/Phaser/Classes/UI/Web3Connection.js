@@ -7,8 +7,8 @@ let signer;
 let userAddress;
 
 // Define the contracts addresses
-let krakenAddress = "0x668567f4f21a3a14fbca3538b4bfecdebee838fb";
-// const mortiAddress = "0x77a64f91ae5a833847474f1016dd8f56530273a9";
+let krakenAddress = "0x6389936fac235a4fadf660ca5c428084115579bb";
+// const mortiAddress = "";
 // const leaderboardAddress = "";
 
 // Create contract objects
@@ -34,7 +34,7 @@ async function connectToMetaMask() {
 
     // Create contract objects
     console.log('Fetching contract data...');
-    krakenContract = new ethers.Contract(krakenAddress, krakenABI, provider);
+    krakenContract = new ethers.Contract(krakenAddress, krakenABI, signer);
 
   } catch (error) {
     console.error('Error connecting to wallet:', error.message);
@@ -52,9 +52,9 @@ async function getOwnedKrakens() {
 
     // Get the list of Krakens and Mortis owned by the user
     console.log('Fetching owned tokens...');
-    console.log(userAddress);
     console.log(krakenContract);
-    const ownedKrakens = await krakenContract.tokensOfOwner(userAddress);
+    const ownedKrakens = await krakenContract.functions.tokensOfOwner(userAddress);
+    console.log(krakenContract.tokensOfOwner);
 
     // Return the list of owned tokens
     return [...ownedKrakens]; 
@@ -62,7 +62,6 @@ async function getOwnedKrakens() {
   } catch (error) {
     console.error('Error fetching owned tokens:', error.message);
     // print error message
-    return [error];
   }
 }
 
@@ -107,4 +106,4 @@ async function registerScore(score) {
 }
         
 
-export { connectToMetaMask, getOwnedKrakens, registerScore };
+export { connectToMetaMask, getOwnedKrakens, getOwnedMortis, registerScore };
