@@ -1,10 +1,9 @@
 import * as Phaser from 'phaser';
-import { loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, addShield, removeUiShield, spawnHearts } from './heart';
+import { loadHearts, createHeartAnimation, drawUiMaxHearts, drawUiHearts, removeUiHeart, addUiHeart, addShield, removeUiShield, spawnHearts } from '../../../heart';
 import eventsCenter from './EventsCenter'
 
 
-export default class Interface extends Phaser.Scene
-{
+class Interface extends Phaser.Scene {
     constructor ()
     {
         super('Interface');
@@ -40,13 +39,6 @@ export default class Interface extends Phaser.Scene
         //Initialize groups for collision detection and other purposes
         this.heartsUiGroup = this.physics.add.group(); // Group for the hearts at the UI
         this.shieldUiGroup = this.physics.add.group(); // Group for the shield at the UI
-
-        //Initialize variables - these are used to track the player's stats between all sessions;
-        //Data is stored in cookies and externally in a decentralized database?
-        this.score = 0; //TODO: Implement score
-        this.timeSurvived = 0; //TODO: Implement time survived
-        this.enemyKills = 0; //TODO: Implement enemy kills
-        this.deathCount = 0; //TODO: Implement death count
 
         //Draw the UI hearts
         drawUiMaxHearts(this); // Draw the empty hearts equal to the player's max hitpoints
@@ -84,8 +76,9 @@ export default class Interface extends Phaser.Scene
             fontStyle: 'normal'
             });
 
-        //Create and draw the death count tracker text
-        this.deathCount = this.add.text(30, 80, 'Death Count: 0', {
+        //Create and draw the deaths count text
+        const deaths = this.scene.player.deaths;
+        this.deathCount = this.add.text(30, 80, 'Death Count: ' + deaths, {
             fontFamily: 'Minecraft',
             fontSize: '30px',
             color: '#000000',
@@ -98,7 +91,6 @@ export default class Interface extends Phaser.Scene
         eventsCenter.on('updateXp', this.updateXp, this);
         eventsCenter.on('updateTime', this.updateTime, this);
         eventsCenter.on('updateEnemyKills', this.updateEnemyKills, this);
-        eventsCenter.on('updateDeathCount', this.updateDeathCount, this);
         eventsCenter.on('addShield', addShield, this);
         eventsCenter.on('removeShield', removeUiShield, this);
         eventsCenter.on('addUiHeart', addUiHeart, this);
@@ -122,14 +114,7 @@ export default class Interface extends Phaser.Scene
         //Update the Enemy Kills tracker text with the actual enemy kills value
         this.enemyKills.setText('Enemy Kills: ' + enemyKills);
         this.enemyKills = enemyKills;
-    }
-
-    updateDeathCount (deathCount)   {
-        //Update the Death Count tracker text with the actual death count value
-        this.deathCount.setText('Deaths: ' + deathCount);
-        this.deathCount = deathCount;
-    }
-  
+    }  
 }
 
-export { Interface };
+export default Interface;

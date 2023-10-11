@@ -1,6 +1,9 @@
 class SceneMain extends Phaser.Scene {
     constructor() {
         super({ key: 'SceneMain' });
+        this.mapWidth = 7680; // Width of the map (8K)
+        this.mapHeight = 4320; // Height of the map (8K)
+        this.followPoint = new Phaser.Math.Vector2();
     }
     
     preload() {
@@ -35,11 +38,13 @@ class SceneMain extends Phaser.Scene {
         this.cameraSpeed = 3;
         
         this.cameras.main.setZoom(2);
-        
-        this.followPoint = new Phaser.Math.Vector2(
-            this.cameras.main.worldView.x + (this.cameras.main.worldView.width * 0.5),
-            this.cameras.main.worldView.y + (this.cameras.main.worldView.height * 0.5)
-        );
+
+        // Set camera bounds to match the map size
+        this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
+
+        // Set initial follow point within the bounds of the map
+        this.followPoint.x = Phaser.Math.Clamp(this.followPoint.x, this.chunkSize * this.tileSize, this.mapWidth - this.chunkSize * this.tileSize);
+        this.followPoint.y = Phaser.Math.Clamp(this.followPoint.y, this.chunkSize * this.tileSize, this.mapHeight - this.chunkSize * this.tileSize);
         
         this.chunks = [];
         
@@ -118,7 +123,12 @@ class SceneMain extends Phaser.Scene {
             this.followPoint.x += this.cameraSpeed;
         }
 
+        // Move the follow point within the bounds of the map
+        this.followPoint.x = Phaser.Math.Clamp(this.followPoint.x, this.chunkSize * this.tileSize, this.mapWidth - this.chunkSize * this.tileSize);
+        this.followPoint.y = Phaser.Math.Clamp(this.followPoint.y, this.chunkSize * this.tileSize, this.mapHeight - this.chunkSize * this.tileSize);
+
         // Center the camera on the follow point
         this.cameras.main.centerOn(this.followPoint.x, this.followPoint.y);
+
     }
 }

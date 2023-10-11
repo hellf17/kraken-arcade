@@ -1,46 +1,48 @@
-// Load the MP4 video from the original URL
-const baseVideoUrlKrakens = 'https://img.pseudo.trident.game';
+import { FFmpeg } from "@ffmpeg.wasm/main";
 
-// Function to get only the first frame of the video of an array of tokens IDs
-async function getFirstFrame(tokenId) {
-  const video = document.createElement('video');
-  video.src = `${baseVideoUrlKrakens}/${tokenId}/anim.mp4`;
-  video.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
-  video.preload = 'auto';
+async function convertMP4toPNG(videoPath) {
+  console.log ('convertMP4toPNG')
+  const ffmpeg = await FFmpeg.create({
+    core: '@ffmpeg.wasm/core'
+  });
+  console.log('ffmpeg created');
 
-  // Wait for the video frames to be ready
-  await new Promise(resolve => video.addEventListener('loadeddata', resolve));
+  // Fetch the video file from the server
+  const response = await fetch(videoPath);
+  console.log('video fetched');
+  const videoArrayBuffer = await response.arrayBuffer();
+  console.log('videoArrayBuffer');
 
-  // Create a temporary canvas for processing
-  var tempCanvas = document.createElement('canvas');
-  var tempCtx = tempCanvas.getContext('2d');
-  tempCanvas.width = video.videoWidth;
-  tempCanvas.height = video.videoHeight;
+  // Write the video file to the virtual file system
+  ffmpeg.fs.writeFile('input.mp4', videoArrayBuffer);
 
-  // Draw the first frame on the temporary canvas
-  tempCtx.drawImage(video, 0, 0);
+  // Run the FFMpeg command to convert the video to PNG frames and save each frame to the virtual file system
+  await ffmpeg.run('-i', data, '-vf', 'fps=10', 'output%02d.png');
 
-  // Convert the frame to PNG
-  const frameDataUrl = tempCanvas.toDataURL('image/png');
+  // Read the PNG frames from the virtual file system
+  const pngDataArray = [];
 
-  // Return the processed frame to the caller
-  return frameDataUrl;
+  for (let i = 0; i < 10; i++) {
+    const pngData = await ffmpeg.fs.readFile(`output0${i}.png`);
+    pngDataArray.push(pngData);
+  }
+
+  // Return the PNG frames to the caller
+  console.log('pngDataArray', pngDataArray);
+  return pngDataArray;
 }
 
-// Function to process each frame of the video
 async function getKrakenSprites(tokenId) {
-  const video = document.createElement('video');
-  video.src = `${baseVideoUrlKrakens}/${tokenId}/anim.mp4`;
-  video.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
-  video.preload = 'auto';
+  // Base URL for Kraken video files
+  const baseVideoUrlKrakens = 'img.pseudo.trident.game';
+  const videoPath = `${baseVideoUrlKrakens}/${tokenId}/anim.mp4`;
+  console.log('videoPath', videoPath);
 
-  const frameCount = 10; // Number of frames in your animation
-  const frames = [];
-
-  // Wait for the video frames to be ready
-  await new Promise(resolve => video.addEventListener('loadeddata', resolve));
+  // Convert MP4 to PNG frames
+  const pngDataArray = await convertMP4toPNG(videoPath);
 
   // Array to store the mask images for each frame
+  console.log('loading mask images');
   const maskImages = [
     '../../../assets/Mask/kraken_mask0.png',
     '../../../assets/Mask/kraken_mask1.png',
@@ -57,22 +59,35 @@ async function getKrakenSprites(tokenId) {
   // Preload mask images
   const maskData = await Promise.all(maskImages.map(loadImage));
 
-  for (let i = 0; i < frameCount; i++) {
-    video.currentTime = (i / frameCount) * video.duration;
-    await new Promise(resolve => video.addEventListener('seeked', resolve));
+  const frames = [];
 
+  // Loop through each PNG frame and apply the mask
+  console.log('applying mask images');
+  for (let i = 0; i < pngDataArray.length; i++) {
+    console.log('applying mask image', i);
     // Create a temporary canvas for processing
     var tempCanvas = document.createElement('canvas');
     var tempCtx = tempCanvas.getContext('2d');
-    tempCanvas.width = video.videoWidth;
-    tempCanvas.height = video.videoHeight;
+
+    // Create an Image object from the PNG frame
+    const image = new Image();
+    image.src = pngDataArray[i];
+    
+    // Create an ImageBitmap from the ImageData (for Safari compatibility)
+    const imageBitmap = await createImageBitmap(image);
+
+    // Draw the Image on the temporary canvas
+    tempCanvas.width = frameWidth;
+    tempCanvas.height = frameHeight;
+    tempCtx.drawImage(imageBitmap, 0, 0);
 
     // Draw the mask frame on the temporary canvas
+    console.log('drawing mask image', i);
     tempCtx.drawImage(maskData[i], 0, 0);
 
     // Apply the mask image as a clipping mask
     tempCtx.globalCompositeOperation = 'source-in';
-    tempCtx.drawImage(video, 0, 0);
+    tempCtx.drawImage(imageBitmap, 0, 0);
 
     // Convert the frame to PNG
     const frameDataUrl = tempCanvas.toDataURL('image/png');
@@ -83,34 +98,19 @@ async function getKrakenSprites(tokenId) {
   return frames;
 }
 
-  // Function to load an image asynchronously
-  function loadImage(src) {
-    return new Promise((resolve, reject) => {
+// Function to load an image asynchronously
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = src;
     img.crossOrigin = 'anonymous'; // Enable cross-origin requests if needed
     img.onload = () => resolve(img);
     img.onerror = (error) => reject(error);
-    });
-  }
-
-  export { getKrakenSprites, getFirstFrame };
-
-  
-/*   // Debug: Print the processed frames
-  frames.forEach((frame, index) => {
-  printDebugFrame(frame, `Frame ${index + 1}`);
   });
-  }
+}
 
-  // Function to print debug frames (for frame only)
-  function printDebugFrame(frame, frameLabel) {
+const frameWidth = 734;
+const frameHeight = 734;
 
-  // Create an image element to display the debug frame
-  const debugImg = document.createElement('img');
-  debugImg.src = frame;
 
-  // Add the debug image to the document
-  document.body.appendChild(debugImg);
-  console.log(`${frameLabel} printed`); 
-  }*/
+export { getKrakenSprites };

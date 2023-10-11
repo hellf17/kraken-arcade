@@ -5,9 +5,10 @@ import { krakenABI } from '../../../solidity/abi/kraken_abi';
 let provider;
 let signer;
 let userAddress;
+let ownedKrakensIds;
 
 // Define the contracts addresses
-let krakenAddress = "0x6389936fac235a4fadf660ca5c428084115579bb";
+let krakenAddress = "0x6389936FAC235a4FADF660Ca5c428084115579Bb";
 // const mortiAddress = "";
 // const leaderboardAddress = "";
 
@@ -20,24 +21,20 @@ let leaderboardContract;
 async function connectToMetaMask() {
   try {
     // Create a Web3Provider with MetaMask
-    console.log('Connecting to MetaMask...');
     provider = new ethers.providers.Web3Provider(window.ethereum);
 
     // Request Ethereum wallet access
     await window.ethereum.request({ method: 'eth_requestAccounts' });
 
     // Get the user's address
-    console.log('Connected to MetaMask!');
-    console.log('Fetching user address...');
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
 
     // Create contract objects
-    console.log('Fetching contract data...');
     krakenContract = new ethers.Contract(krakenAddress, krakenABI, signer);
 
   } catch (error) {
-    console.error('Error connecting to wallet:', error.message);
+    window.alert('Error connecting to wallet:', error.message);
   }
 }
 
@@ -51,17 +48,16 @@ async function getOwnedKrakens() {
     }
 
     // Get the list of Krakens and Mortis owned by the user
-    console.log('Fetching owned tokens...');
-    console.log(krakenContract);
-    const ownedKrakens = await krakenContract.functions.tokensOfOwner(userAddress);
-    console.log(krakenContract.tokensOfOwner);
+    await krakenContract.functions.tokensOfOwner(userAddress).then((ownedKrakens) => {
+      ownedKrakensIds = ownedKrakens;
+    });
 
     // Return the list of owned tokens
-    return [...ownedKrakens]; 
+    return ownedKrakensIds;
 
   } catch (error) {
-    console.error('Error fetching owned tokens:', error.message);
-    // print error message
+    window.alert('Error fetching owned tokens:', error.message);
+    return [];
   }
 }
 
@@ -81,8 +77,7 @@ async function getOwnedMortis() {
     return [ ...ownedMortis]; 
 
   } catch (error) {
-    console.error('Error fetching owned tokens:', error.message);
-    // Handle errors
+    window.alert('Error fetching owned tokens:', error.message);
     return [];
   }
 }

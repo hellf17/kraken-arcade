@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { connectToMetaMask, getOwnedKrakens, getOwnedMortis } from '../Classes/UI/Web3Connection.js';
-import { getKrakenSprites, getFirstFrame } from '../Classes/UI/GetPlayerSprites.js';
+import eventsCenter from '../Classes/UI/EventsCenter.js';
 
 class StartMenu extends Phaser.Scene {
     constructor() {
@@ -12,6 +12,8 @@ class StartMenu extends Phaser.Scene {
         this.load.spritesheet('playButton', './src/assets/images/buttons/playButton.png', {frameWidth: 300, frameHeight: 100});
         this.load.spritesheet('optionsButton', './src/assets/images/buttons/optionsButton.png', { frameWidth: 300, frameHeight: 100 });
         this.load.spritesheet('connectButton', './src/assets/images/buttons/connectButton.png', { frameWidth: 300, frameHeight: 100 });
+        this.load.spritesheet('krakenButton', './src/assets/images/buttons/krakenButton.png', { frameWidth: 100, frameHeight: 100 });   
+        this.load.spritesheet('mortiButton', './src/assets/images/buttons/mortiButton.png', { frameWidth: 100, frameHeight: 100 }); 
         //this.load.audio('StartMenuMusic', './src/assets/audio/startMenuMusic.mp3');
     }
 
@@ -34,6 +36,7 @@ class StartMenu extends Phaser.Scene {
 
     // Apply the scale factor to resize the background image
     backgroundImage.setScale(scale);
+    backgroundImage.setDepth(0);
 
     // Position the image at the center of the screen
     backgroundImage.setPosition(screenWidth / 2, screenHeight / 2);
@@ -47,18 +50,24 @@ class StartMenu extends Phaser.Scene {
 
     // Create containers for the buttons and for the Kraken/Morti selection
     this.buttonContainer = this.add.container();
-    this.krakenSelectionContainer = this.add.container();
-    this.mortiSelectionContainer = this.add.container();
     this.buttonContainer.visible = true;
-    this.krakenSelectionContainer.visible = false;
-    this.mortiSelectionContainer.visible = false;
-    
 
     // Player selection variables
-    this.selectedPlayerType = 0; // 0 for Kraken, 1 for Morti    
-    this.selectedKraken = 420420; // The Kraken Id selected by the user
-    this.selectedMorti = 420420; // The Morti Id selected by the user
-    
+    this.selectedPlayerType = 0; // 0 for Kraken (default), 1 for Morti    
+    this.selectedKraken = 1518; // The default Kraken Id
+    this.selectedMorti = 779; // The default Morti Id
+
+    // Set's the listener for the PlayerSelection scene
+    eventsCenter.on('selected-kraken', () => {
+        this.selectedPlayerType = 0;
+        this.selectedKraken = eventsCenter.selectedKraken;
+    }, this);
+
+    eventsCenter.on('selected-morti', () => {
+        this.selectedPlayerType = 1;
+        this.selectedMorti = eventsCenter.selectedMorti;
+    }, this);
+
     // Start Game button
     const playButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 200, 'playButton');
     playButton.setScale(1.2);
@@ -76,7 +85,8 @@ class StartMenu extends Phaser.Scene {
     const optionsButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 100, 'optionsButton');
     this.anims.create({
         key: 'optionsButton',
-        frames: this.anims.generateFrameNumbers('optionsButton', { start: 0, end: 9 }),
+        frames: this.anims.generateFrameNumbers('optionsButton', { start: 0, end: 9 
+        }),
         frameRate: 10,
         repeat: -1
     });
@@ -159,111 +169,109 @@ class StartMenu extends Phaser.Scene {
     connectButton.on('pointerdown', async () => {
         try {
             // Calls the connectToMetaMask function from Web3Connection.js and connects the user to MetaMask; wait for completion
-            console.log('Connecting to MetaMask...');
             await connectToMetaMask();
+
+            // Shows a message if the user is connected to MetaMask
+            window.alert('You are connected to MetaMask');
     
             // After the user connects, get the list of owned Krakens and Mortis
-            console.log('Fetching owned tokens...');
             this.krakensIds = await getOwnedKrakens();
             this.mortisIds = await getOwnedMortis();
-            console.log('Owned tokens:', this.krakensIds, this.mortisIds);
 
             // If the user has Krakens, show the Kraken selection
-            if (this.krakensIds.length > 0) {
-                // Show the Kraken selection after the user connects
-                console.log('Showing Kraken selection...');
-                this.krakenSelection (this.krakensIds);
-                this.krakenSelectionContainer.visible = true;
+            if (this.krakensIds[0].length > 0 && this.mortisIds[0].length < 0) {
+                // Call the Selection Scene with the Kraken IDs
+                // Sets the position of the Kraken selection scene
+                this.scene.run('PlayerSelection', {playerType: 0, userTokensIds: this.krakensIds});
+            } 
+            else if (this.krakensIds[0].length < 0 && this.mortisIds[0].length > 0) {
+                // Call the Selection Scene with the Morti IDs
+                this.scene.run('PlayerSelection', {playerType: 1, userTokensIds: this.mortisIds});
+            } 
+            else if (this.krakensIds[0].length > 0 && this.mortisIds[0].length > 0) {
+                // Creates a black filter
+                this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000);
+
+                // Create a Kraken and a Morti button
+                const krakenButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'krakenButton');
+                krakenButton.setScale(2);
+                this.anims.create({
+                    key: 'krakenButton',
+                    frames: this.anims.generateFrameNumbers('krakenButton', { start: 0, end: 9 }),
+                    frameRate: 10,
+                    repeat: -1
+                });
+                krakenButton.anims.play('krakenButton', true);
+                krakenButton.setInteractive();
+                this.buttonContainer.add(krakenButton);
+
+                const mortiButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 100, 'mortiButton');
+                mortiButton.setScale(1.5);
+                this.anims.create({
+                    key: 'mortiButton',
+                    frames: this.anims.generateFrameNumbers('mortiButton', { start: 0, end: 9 }),
+                    frameRate: 10,
+                    repeat: -1
+                });
+                mortiButton.anims.play('mortiButton', true);
+                mortiButton.setInteractive();
+                this.buttonContainer.add(mortiButton);
+
+                // Button interactions
+                krakenButton.on('pointerover', () => {
+                    // Highlight the button when the mouse is over it
+                    krakenButton.setScale(1.1);
+                });
+                krakenButton.on('pointerout', () => {
+                    // Reset the button's scale when the mouse is out
+                    krakenButton.setScale(1);
+                });
+                krakenButton.on('pointerdown', () => {
+                    krakenButton.preFX.addGlow(0x000000);
+                    this.scene.run('PlayerSelection', {playerType: 0, userTokensIds: this.krakensIds});
+                    // Clear the black filter
+                    this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000).clear();
+                    // Clear the Kraken and Morti buttons
+                    krakenButton.destroy();
+                    mortiButton.destroy();
+                });
+
+                mortiButton.on('pointerover', () => {
+                    // Highlight the button when the mouse is over it
+                    mortiButton.setScale(1.1);
+                });
+                mortiButton.on('pointerout', () => {
+                    // Reset the button's scale when the mouse is out
+                    mortiButton.setScale(1);
+                });
+                mortiButton.on('pointerdown', () => {
+                    mortiButton.preFX.addGlow(0x000000);
+                    this.scene.run('PlayerSelection', {playerType: 1, userTokensIds: this.mortisIds});
+                    // Clear the black filter
+                    this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000).clear();
+                    // Clear the Kraken and Morti buttons
+                    krakenButton.destroy();
+                    mortiButton.destroy();
+                });
+
+            } else {
+                this.add.text(
+                    screenWidth / 2, 
+                    screenHeight / 2 + 300, 
+                    ['You don\'t have any Krakens or Mortis in your wallet.',
+                    'Go ahead, you can play as the default Kraken or ',
+                    'Morti and shot your way up throught the leaderboard highs.'], 
+                    { fontFamily: 'Minecraft', fontSize: 40, color: '#ffffff' });
             }
         } catch (error) {
-            console.error('Error connecting or fetching owned tokens:', error);
-            // Pop up an alert to the user
-            window.alert('Error connecting or fetching owned tokens:', error);
+            // Show an error message if failed
+            console.log(error);
         }
     });
     }
 
-    // Kraken selection function
-    krakenSelection (userKrakenIds) {
-        const krakenSpacingX = 164 // Horizontal spacing between Krakens
-        const krakenSpacingY = 100; // Vertical spacing between Krakens
-        const krakenScale = 0.3; // Scale factor for Krakens
-        this.userKrakenIds = userKrakenIds; // The list of Krakens owned by the user  
-        this.preFX.setPadding(4) // Set the padding for FX
-
-        // Initialize row and column indices
-        let rowIndex = 0;
-        let colIndex = 0;
-
-        // Draw each Kraken owned by the user in rows of 5 Krakens each; User can select one of the Krakens to play with
-        this.userKrakensIds.forEach((krakenId) => {
-            // Calculate the position for the Kraken
-            const xPos = 100 + colIndex * krakenSpacingX;
-            const yPos = window.height / 2 + rowIndex * krakenSpacingY;
-
-            // Get the Kraken's sprite and add it to the scene; make it interactive
-            getFirstFrame(krakenId).then((frame) => {
-                const krakenSprite = this.add.sprite(xPos, yPos, frame);
-                krakenSprite.setScale(krakenScale);
-                krakenSprite.setInteractive();
-
-                // Add a glowing white outline to the Kraken's sprite
-                krakenSprite.preFX.addGlow(0x000000);
-
-                // Add Kraken sprite to container
-                this.krakenSelectionContainer.add(krakenSprite);
-
-                krakenSprite.on('pointerover', () => {
-                    krakenSprite.setScale(1.1); // Highlight the Kraken when the mouse is over it
-                });
-
-                krakenSprite.on('pointerout', () => {
-                // Reset the button's scale when the mouse is out
-                    krakenSprite.setScale(1);
-                });
-
-                krakenSprite.on('pointerdown', () => {
-                    // Set the selected Kraken as the player's Kraken
-                    this.selectedKraken = krakenId; // The selected Kraken ID
-                    this.selectedPlayerType = 0; // 0 for Kraken, 1 for Morti
-                    // Show a message to the user
-                    window.alert(`Selected Kraken ID ${krakenId}, wait for the sprite to load`);
-                });
-            });
-
-            // Update row and column indices
-            colIndex++;
-            if (colIndex >= 5) { // Maximum of 5 Krakens per row
-                colIndex = 0;
-                rowIndex++;
-            }
-        });
-    }
-
     update() {
-        // If the user selected a Kraken, call the getKrakenSprites function from GetPlayerSprites and get the Kraken's sprites
-        // This must run only once each time the user selects a new Kraken
-        if (this.selectedKraken !== 420420) {
-            // Call the getKrakenSprites with the selected Kraken ID
-            console.log(`Loading the sprite for Kraken ID ${this.selectedKraken}...`);
-            getKrakenSprites(this.selectedKraken).then((frames) => {
- 
-            // Add the frames to the Phaser cache as textures
-            console.log(`Adding the sprite for Kraken ID ${this.selectedKraken} to the cache...`);
-            frames.forEach((frame, index) => {
-                console.log(`Adding frame ${index}...`);
-                this.textures.addImage(`player + ${this.selectedPlayerType} + ${this.selectedKraken} + ${index}`, frame);
-                this.scene.scene.load.image(`player + ${this.selectedPlayerType} + ${this.selectedKraken} + ${index}`, frame);
-            });
- 
-            // Show a message to the user if successful
-            window.alert(`Successfully loaded the sprite for Kraken ID ${this.selectedKraken}`);
-
-            // Reset the selected Kraken
-            this.selectedKraken = 420420;
-            });
-        }
-        
+    
     }    
 }
 

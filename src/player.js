@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser'
 import eventsCenter from './Phaser/Classes/UI/EventsCenter'
-import { playProjectileAnimation, playProjectileSound, createProjectile, Projectile } from './projectile';
+import { playProjectileAnimation, playProjectileSound, playUltimateSound, createProjectile, createUltimate } from './projectile';
+import { getTopStats } from './localDataStorage';
 
 const playerType = {
     Type1: 0,
@@ -8,20 +9,15 @@ const playerType = {
 };
 
 //Load player spritesheet
-const loadPlayer = (scene, type) => {
+const loadPlayer = (scene, type, tokenId) => {
     scene.load.spritesheet(
-        'player' + type + '420420',
-        'src/assets/images/spritesheets/kraken-player/kraken-idle-sheet.png', // Kraken spritesheet
-        { frameWidth: 510, frameHeight: 500 }
+        'player' + type + tokenId,
+        'src/assets/images/spritesheets/player/kraken/sheet' + tokenId + '.png', // Kraken spritesheet
+        { frameWidth: 64, frameHeight: 64 }
     );
 };
 
-const createPlayer = (scene, screenX, screenY, type, tokenId) => {
-    const player = new Player(scene, screenX, screenY, type, tokenId);
-
-    return player;
-};
-
+//Create player animations
 const createAnimations = (scene, type, tokenId) => {
     scene.anims.create({
         key: 'player' + type + tokenId,
@@ -32,6 +28,14 @@ const createAnimations = (scene, type, tokenId) => {
     });
 };
 
+//Create player
+const createPlayer = (scene, screenX, screenY, type, tokenId) => {
+    const player = new Player(scene, screenX, screenY, type, tokenId);
+
+    return player;
+};
+
+//Player class
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type, tokenId) {
         super(scene, x, y, 'player' + type + tokenId);
@@ -39,6 +43,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
         scene.physics.world.enable(this);
   
+        this.tokenId = tokenId;
         this.isPlayerAttacking = false;
         this.isPlayerAlive = true;
         this.isPlayerHit = false;
@@ -47,22 +52,29 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
         this.damageMultiplier = 1; // 1 is the normal damage, buffs/debuffs can change this value
         this.speedMultiplier = 1; // 1 is the normal speed, buffs/debuffs can change this value
+        this.ultimatesUsed = 0; // Number of ultimates used by the player
 
         this.xpTracker = 0;
         this.timeSurvived = 0;
         this.enemyKills = 0;
-        this.deathCounter = 0;
+        
+        // Gets the kraken total deaths from the local storage if it exists, otherwise it will be 0
+        if (localStorage.getItem('deaths') === null) {
+            localStorage.setItem('deaths', 0);
+        }
+        
+        const deaths = getTopStats('deaths', 1);
+        this.deaths = deaths[0].deaths
         
         this.setCollideWorldBounds(true);
         this.setDepth(1);
         this.body.setSize();
-        this.setScale(0.3);
+        this.setScale(2);
         this.setMaxVelocity(300, 300);
         this.setDrag(1000);
 
          // Set FX padding and add shadow to player
         this.preFX.setPadding(6)
-        this.preFX.addPixelate(0.3);
 
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
@@ -82,35 +94,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.maxShield = 3;
                 break;
         }
-
-         // Add green aura to player if it has a shield
-        if (this.shield > 0) {
-            console.log("shield aura")
-            this.preFX.addGlow(328464).setActive(true); // Set active to true to make the glow visible
-
-            this.tweens.add({
-                targets: fx,
-                outerStrength: 10,
-                yoyo: true,
-                loop: -1,
-                ease: 'sine.inout'
-            });
-    
-        } else {
-            this.preFX.addGlow().setActive(false);
-        }
-
-        // Add shine to player if it has an ultimate ready
-        if (this.isPlayerUltimateReady) {
-            console.log("ultimate shine")
-            this.preFX.addShine(0.5, 1, 3, true).setActive(true);
-            
-        } else {
-            this.preFX.addShine().setActive(false);
-        }
     } 
 
-    setupKeys (scene){
+    setupKeys (scene) {
         this.keys = scene.input.keyboard.addKeys({  
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -150,32 +136,20 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         //Controls the player ultimate attack
         if (this.keys.ulti.isDown) {
             if (!this.isPlayerAttacking && this.isPlayerUltimateReady) {
-                this.isPlayerAttacking = true;
-    
-                // Create the ultimate attack - laser beam that follow the mouse and has 5 seconds of duration
-                const ultimateAttack = scene.physics.add.spritesheet(this.x, this.y, 'ultimateAttack');
-                ultimateAttack.anims.play('ultimateAttack', true);
-                ultimateAttack.setScale(1.5);
-                ultimateAttack.setDepth(2);
-                ultimateAttack.body.setSize(50, 100);
-                ultimateAttack.body.setOffset(50, 0);
-                ultimateAttack.setVelocity(0, 0);
-                ultimateAttack.setCollideWorldBounds(true);
-                ultimateAttack.setBounce(1);
-                ultimateAttack.setDrag(1000);
+                this.isPlayerUltimateReady = false;
+                this.ultimatesUsed += 1;
 
-/*                 // Add ultimate attack to the scene
-                scene.ultimateAttacks.push(ultimateAttack);
+                // Create the ultimate attack - laser beam that follow the mouse and has 5 seconds of duration
+                const ultimate = createUltimate(scene, this.x, this.y, this.damageMultiplier);
 
                 // Play ultimate sound
                 playUltimateSound();
 
-                // Set the ultimate attack duration
-                scene.time.delayedCall(5000, () => { // 5000ms delay for the attack animation
-                    ultimateAttack.destroy();
-                    this.isPlayerUltimateReady = false;
-                    this.isPlayerAttacking = false;
-                }); */
+                // Set the timer to auto destroy of the ultimate attack
+                ultimate.autoDestroy();
+
+                // Set the ultimate attack animation
+                ultimate.animateUltimate();
             }
         }
 
@@ -185,7 +159,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isPlayerAttacking = true;
                            
                 //Creates projectiles and adds them to the projectiles group
-                const projectile = createProjectile(scene, scene.player.x, scene.player.y, scene.projectileType, this.damageMultiplier);
+                const projectile = createProjectile(scene, this.x, this.y, scene.projectileType, this.damageMultiplier);
 
                 //Animates the projectile
                 playProjectileAnimation(projectile, scene.projectileType);
@@ -234,8 +208,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     kill() {
         this.isPlayerAlive = false;
-        this.deathCounter += 1;
-        this.eventsCenter.emit('updateDeathCount', this.deathCounter);
+        this.deaths += 1;
     
         // Stops the background music
         this.scene.sound.stopAll();
@@ -243,7 +216,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // Take a screenshot of the game;    
         this.scene.renderer.snapshot(image => {
             // Store the screenshot in a variable after transforming it into a texture
-            this.scene.textures.addBase64('gameOverBackground' + this.deathCounter, image.src);
+            this.scene.textures.addBase64('gameOverBackground' + this.deaths, image.src);
         });
 
         // Start the EndMenu and passes Xp, time survived, enemy kills, and the screenshot with a fade effect
@@ -253,14 +226,42 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             moveBelow: true,
             onUpdate: this.transitionOut,
             data: {
+                tokenId: this.tokenId,
                 xp: this.xpTracker,
                 timer: this.timeSurvived,
                 kills: this.enemyKills,
-                deaths: this.deathCounter
+                deaths: this.deaths
             }
         });
 
         this.scene.scene.stop('Game');
+    }
+
+    ultimateAttackTracker() {
+        // Sets the ultimate attack to ready if the player has enough kills and time survived
+        if (this.ultimatesUsed == 0) {
+            if (this.enemyKills >= 5 && this.timeSurvived >= 20) {
+            this.isPlayerUltimateReady = true;
+        }} 
+        else if (this.ultimatesUsed == 1) {
+            if (this.enemyKills >= 60 && this.timeSurvived >= 120) {
+                this.isPlayerUltimateReady = true;
+        }}
+        else if (this.ultimatesUsed == 2) {
+            if (this.enemyKills >= 90 && this.timeSurvived >= 180) {
+                    this.isPlayerUltimateReady = true;
+                    this.xpTrackerActive = this.xpTracker;
+        }}
+        else {
+            // If the player has used 3 ultimates, the next one will be ready if the player has enough kills and time survived 
+            // Will also check if the player has INCREASED the XP in at least 1000 since the last ultimate was used
+            if (this.enemyKills >= 120 && this.timeSurvived >= 240) {
+                // If the player has increased the XP in at least 1000, the ultimate will be ready
+                if ((this.xpTracker - this.xpTrackerActive) >= 1000) {
+                    this.isPlayerUltimateReady = true;
+                    this.xpTrackerActive = this.xpTracker;
+                }
+        }}
     }
 
     update() {
@@ -284,10 +285,33 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         //Update ultimate attack to ready if the player has enough kills and time survived
+        ultimateAttackTracker();        
+
+        // Add green aura to player if it has a shield
+        if (this.shield > 0) {
+            this.preFX.addGlow(328464).setActive(true); // Set active to true to make the glow visible
+            this.tweens.add({
+                targets: fx,
+                outerStrength: 10,
+                yoyo: true,
+                loop: -1,
+                ease: 'sine.inout'
+            });
+    
+        } else {
+            this.preFX.addGlow().setActive(false);
+        }
+
+        // Add shine to player if it has an ultimate ready
+        if (this.isPlayerUltimateReady) {
+            this.preFX.addShine(0.5, 1, 3, true).setActive(true);
+            
+        } else {
+            this.preFX.addShine().setActive(false);
+        }
         
     }
 }
-
 
 
 export { playerType, createPlayer, createAnimations, loadPlayer, Player };

@@ -1,4 +1,6 @@
 import * as Phaser from 'phaser';
+import { recordPlayerStats, getTopStats } from '../../localDataStorage';
+//import { recordPlayerStatsExt, getTopStatsExt } from '../../externalDataStorage';
 
 
 class EndMenu extends Phaser.Scene {
@@ -8,6 +10,7 @@ class EndMenu extends Phaser.Scene {
 
     init (data)
     {
+        this.tokenId = data.tokenId;
         this.xp = data.xp;
         this.timer = data.timer;
         this.kills = data.kills;
@@ -64,6 +67,86 @@ class EndMenu extends Phaser.Scene {
     //const music = this.sound.add('endMenuMusic', { loop: true });
     //music.play();
 
+    //Save the player's score, time survived and enemies killed locally
+    //recordPlayerStatsExt (this.tokenId, this.xp, this.timer, this.kills, this.deaths);
+    recordPlayerStats (this.tokenId, this.xp, this.timer, this.kills, this.deaths);
+
+    // Create a container for the top stats
+    const topStatsContainer = this.add.container();
+    this.add.existing(topStatsContainer); // Add the container to the scene
+
+    // Show the Kraken death count
+    topStatsContainer.add(this.add.text(50, 50, 'Total Krakens Deaths' + this.deaths, {
+        fontFamily: 'Minecraft',
+        fontSize: '40px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'}
+    ));
+    
+    // Shows the top 10 from scores, time survived and enemies killed; received from the external data storage
+    const topScores = getTopStats('score', 10);
+    topStatsContainer.add(this.add.text((screenWidth/3), 50, 'Score Board', {
+        fontFamily: 'Minecraft',
+        fontSize: '40px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'}
+    ));
+    topScores.forEach((score, index) => {
+        topStatsContainer.add(this.add.text((screenWidth/3), 50 + index * 40, `${index + 1}. ${score.score}`, {
+            fontFamily: 'Minecraft',
+            fontSize: '30px',
+            color: '#D40004',
+            stroke: '#ffffff',
+            strokeThickness: 2,
+            fontStyle: 'bold'}
+        ));
+    });
+    
+    const topTimeSurvived = getTopStats('timeSurvived', 10);
+    topStatsContainer.add(this.add.text((screenWidth/3)*2 - 100, 50, 'Time Board', {
+        fontFamily: 'Minecraft',
+        fontSize: '40px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'}
+    ));
+    topTimeSurvived.forEach((timeSurvived, index) => {
+        topStatsContainer.add(this.add.text((screenWidth/3)*2 - 100 , 50 + index * 40, `${index + 1}. ${timeSurvived.timeSurvived}`, {
+            fontFamily: 'Minecraft',
+            fontSize: '30px',
+            color: '#D40004',
+            stroke: '#ffffff',
+            strokeThickness: 2,
+            fontStyle: 'bold'}
+        ));
+    });
+    
+    const topKills = getTopStats('kills', 10);
+    topStatsContainer.add(this.add.text((screenWidth/3)*2, 50, 'Kill Board', {
+        fontFamily: 'Minecraft',
+        fontSize: '40px',
+        color: '#D40004',
+        stroke: '#ffffff',
+        strokeThickness: 2,
+        fontStyle: 'bold'}
+    ));
+
+    topKills.forEach((kills, index) => {
+        topStatsContainer.add(this.add.text((screenWidth - 100, 50 + index * 40, `${index + 1}. ${kills.kills}`, {
+            fontFamily: 'Minecraft',
+            fontSize: '30px',
+            color: '#D40004',
+            stroke: '#ffffff',
+            strokeThickness: 2,
+            fontStyle: 'bold'}
+    )))
+    });
+
     // New game button
     const newGame = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'playButton');
     newGame.anims.play('playButton', true);
@@ -118,7 +201,7 @@ class EndMenu extends Phaser.Scene {
         // Start new game
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            this.scene.start('Game');
+            this.scene.restart('Game');
             }
         )
     });

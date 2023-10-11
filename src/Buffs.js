@@ -84,6 +84,7 @@ class Buffs extends Phaser.Physics.Arcade.Sprite {
                 this.speed = 1.5;
                 this.damage = 1.3;
                 this.duration = 5000;
+                this.fireRateType = 0;
                 break;
             case buffType.Type2:
                 this.health = 1;
@@ -92,6 +93,7 @@ class Buffs extends Phaser.Physics.Arcade.Sprite {
                 this.speed = 1.7;
                 this.damage = 1.3;
                 this.duration = 10000;
+                this.fireRateType = 0;
                 break;
             case buffType.Type3:
                 this.health = 1;
@@ -100,6 +102,7 @@ class Buffs extends Phaser.Physics.Arcade.Sprite {
                 this.speed = 2;
                 this.damage = 1.5;
                 this.duration = 15000;
+                this.fireRateType = 1;
                 break;
         }        
     }
