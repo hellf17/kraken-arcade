@@ -6,10 +6,11 @@ let provider;
 let signer;
 let userAddress;
 let ownedKrakensIds;
+let ownedMortisIds;
 
 // Define the contracts addresses
 let krakenAddress = "0x6389936FAC235a4FADF660Ca5c428084115579Bb";
-// const mortiAddress = "";
+let mortiAddress = "0x77b7d9a6513bfb1679c778b257c198f44a78fa69";
 // const leaderboardAddress = "";
 
 // Create contract objects
@@ -32,6 +33,7 @@ async function connectToMetaMask() {
 
     // Create contract objects
     krakenContract = new ethers.Contract(krakenAddress, krakenABI, signer);
+    mortiContract = new ethers.Contract(mortiAddress, krakenABI, signer);
 
   } catch (error) {
     window.alert('Error connecting to wallet:', error.message);
@@ -62,19 +64,22 @@ async function getOwnedKrakens() {
 }
 
 // Function to get owned Krakens and Mortis for the connected user; returns an array of token IDs
+
 async function getOwnedMortis() {
   try {
     // Check if the user is connected
-    if (!provider) {
+    if (provider == null) {
       console.error('User is not connected to a wallet.');
       return [];
     }
 
-    // Get the list of Krakens and Mortis owned by the user
-    const ownedMortis = await mortiContract.tokensOfOwner(userAddress);
+    // Get the list of Mortis and Mortis owned by the user
+    await mortiContract.functions.tokensOfOwner(userAddress).then((ownedMortis) => {
+      ownedMortisIds = ownedMortis;
+    });
 
     // Return the list of owned tokens
-    return [ ...ownedMortis]; 
+    return ownedMortisIds;
 
   } catch (error) {
     window.alert('Error fetching owned tokens:', error.message);

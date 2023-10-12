@@ -11,24 +11,27 @@ class PlayerSelection extends Phaser.Scene {
     init (data) {
         this.playerType = data.playerType;
         if (this.playerType == 0) { // Kraken
-            this.userKrakenIds = data.userTokenIds;
+            this.userKrakenIds = data.userTokensIds;
         } else if (this.playerType == 1) { // Morti
-            this.userMortiIds = data.userTokenIds;
+            this.userMortiIds = data.userTokensIds;
         }
     }
 
     preload () {
         // Loops through the user's Tokens IDs and loads the spritesheets for each one
+        // TODO: Add a loading bar
         if (this.playerType == 0) {
-            for (const krakenId of this.userKrakenIds[0]) {
-            this.load.spritesheet('player0' + krakenId, 'src/assets/images/krakens/player0' + krakenId + '.png', { frameWidth: 128, frameHeight: 128 });
-            console.log('Loaded spritesheet for Kraken ID ' + krakenId);
+            for (let i = 0; i < this.userKrakenIds[0].length; i++) {
+                const krakenId = this.userKrakenIds[0][i];
+                this.load.spritesheet('player0' + krakenId, 'src/assets/images/spritesheets/player/kraken/sheet' + krakenId + '.png', { frameWidth: 64, frameHeight: 64 });
+                console.log('Loaded spritesheet for Kraken ID ' + krakenId);
             }
 
         } else if (this.playerType == 1) {
-            for (const mortiId of this.userMortiIds[0]) {
-            this.load.spritesheet('player1' + mortiId, 'src/assets/images/mortis/player1' + mortiId + '.png', { frameWidth: 128, frameHeight: 128 });
-            console.log('Loaded spritesheet for Morti ID ' + mortiId);
+            for (let i = 0; i < this.userMortiIds[0].length; i++) {
+                const mortiId = this.userMortiIds0[0][i];
+                this.load.spritesheet('player1' + mortiId, 'src/assets/images/spritesheets/player/kraken/player1' + mortiId + '.png', { frameWidth: 64, frameHeight: 64 });
+                console.log('Loaded spritesheet for Morti ID ' + mortiId);
             }       
         }
     }
@@ -39,19 +42,20 @@ class PlayerSelection extends Phaser.Scene {
         const screenHeight = window.innerHeight;
 
         // Create the description text
-        const descriptionText = this.add.text(screenWidth / 2, screenHeight / 2, 'Select your character:', { fontFamily: 'Minecraft', fontSize: 40, color: '#ffffff' });
+        const descriptionText = this.add.text(screenWidth / 2 - 250, screenHeight / 2 + 50, 'Select your character:', { fontFamily: 'Minecraft', fontSize: 40, color: '#ffffff' })
 
         // Create the container for the thumbnails
         const thumbContainer = this.add.container();
-        const thumbSpacingX = 164;
-        const thumbSpacingY = 100;
-        const thumbScale = 1;
+        const thumbSpacingX = 264;
+        const thumbSpacingY = 200;
+        const thumbScale = 1.5;
 
         let colIndex = 0;
         let rowIndex = 0;
 
         if (this.playerType == 0) {
-            for (const krakenId of this.userKrakenIds[0]) {
+            for (let i = 0; i < this.userKrakenIds[0].length; i++) {
+                const krakenId = this.userKrakenIds[0][i];
                 // Create animation for the Kraken
                 this.anims.create({
                     key: 'player0' + krakenId,
@@ -60,36 +64,31 @@ class PlayerSelection extends Phaser.Scene {
                     repeat: -1,
                     yoyo: true
                 });
-                console.log('Created animation for Kraken ID ' + krakenId);
 
                 // Calculate the position for the thumbnail
-                const xPos = 100 + colIndex * thumbSpacingX;
-                const yPos = screenHeight / 2 + rowIndex * thumbSpacingY;
+                const xPos = screenWidth/4 + colIndex * thumbSpacingX;
+                const yPos = screenHeight / 2 + 150 + rowIndex * thumbSpacingY;
 
                 // Create the Kraken's sprite and text
                 const krakenSprite = this.add.sprite(xPos, yPos, 'player0' + krakenId);
-                console.log('Created sprite for Kraken ID ' + krakenId);
                     krakenSprite.setScale(thumbScale);
                     krakenSprite.setDepth(1);
                     krakenSprite.play('player0' + krakenId);
                     krakenSprite.setInteractive()
-                const tokenText = this.add.text(xPos, yPos - 30, krakenId, { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+                const tokenText = this.add.text(krakenSprite.getCenter, krakenSprite.getCenter + 50, krakenId, { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
             
                 // Add a glowing white outline to the Kraken's sprite
-                krakenSprite.preFX.setPadding(4);
-                tokenText.preFX.setPadding(4);
+                krakenSprite.preFX.setPadding(2);
 
                 krakenSprite.on('pointerover', () => {
-                    krakenSprite.setScale(0.3); // Highlight the Kraken when the mouse is over it
-                    krakenSprite.preFX.addGlow(0x000000);
-                    tokenText.preFX.addGlow(0x000000);
+                    krakenSprite.setScale(1.6); // Highlight the Kraken when the mouse is over it
+                    krakenSprite.preFX.addGlow(0xFFFFFF);
                 });
 
                 krakenSprite.on('pointerout', () => {
                     // Reset the button's scale when the mouse is out
-                    krakenSprite.setScale(0.2);
+                    krakenSprite.setScale(1.5);
                     krakenSprite.preFX.clear();
-                    tokenText.preFX.clear();
                 });
 
                 krakenSprite.on('pointerdown', () => {
@@ -98,21 +97,25 @@ class PlayerSelection extends Phaser.Scene {
 
                     // Show a message to the user
                     window.alert(`Selected Kraken ID ${krakenId}`);
+                    
+                    // End the scene
+                    this.scene.stop();
                 });
 
                 thumbContainer.add(krakenSprite);
                 thumbContainer.add(tokenText);
+
+                // Update indices
+                colIndex++;
+                if (colIndex >= 5) { // Maximum of 5 Krakens per row
+                    colIndex = 0;
+                    rowIndex++;
+                };
             }
-            
-            // Update row and column indices
-            colIndex++;
-            if (colIndex >= 5) { // Maximum of 5 Krakens per row
-                colIndex = 0;
-                rowIndex++;
-            };
         } 
         else if (this.playerType == 1) {
-            for (const mortiId of this.userMortiIds[0]) {
+            for (let i = 0; i < this.userMortiIds[0].length; i++) {
+                const mortiId = this.userMortiIds0[0][i];
                 // Create animation for the Morti
                 this.anims.create({
                     key: 'player1' + mortiId,
@@ -121,36 +124,31 @@ class PlayerSelection extends Phaser.Scene {
                     repeat: -1,
                     yoyo: true
                 });
-                console.log('Created animation for Morti ID ' + mortiId);
 
                 // Calculate the position for the thumbnail
-                const xPos = 100 + colIndex * thumbSpacingX;
-                const yPos = window.innerHeight / 2 + rowIndex * thumbSpacingY;
+                const xPos = screenWidth/4 + colIndex * thumbSpacingX;
+                const yPos = screenHeight / 2 + 150 + rowIndex * thumbSpacingY;
 
                 // Create the Morti's sprite and text
                 const mortiSprite = this.add.sprite(xPos, yPos, 'player1' + mortiId);
-                console.log('Created sprite for Morti ID ' + mortiId);
                     mortiSprite.setScale(thumbScale);
                     mortiSprite.setDepth(1);
                     mortiSprite.play('player1' + mortiId);
                     mortiSprite.setInteractive()
-                const tokenText = this.add.text(xPos, yPos - 30, mortiId, { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
+                const tokenText = this.add.text(mortiSprite.getCenter, mortiSprite.getCenter + 50, mortiId, { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
             
                 // Add a glowing white outline to the Morti's sprite
-                mortiSprite.preFX.setPadding(4);
-                tokenText.preFX.setPadding(4);
+                mortiSprite.preFX.setPadding(2);
 
                 mortiSprite.on('pointerover', () => {
-                    mortiSprite.setScale(0.3); // Highlight the Morti when the mouse is over it
-                    mortiSprite.preFX.addGlow(0x000000);
-                    tokenText.preFX.addGlow(0x000000);
+                    mortiSprite.setScale(1.6); // Highlight the Morti when the mouse is over it
+                    mortiSprite.preFX.addGlow(0xFFFFFF);
                 });
 
                 mortiSprite.on('pointerout', () => {
                     // Reset the button's scale when the mouse is out
-                    mortiSprite.setScale(0.2);
+                    mortiSprite.setScale(1.5);
                     mortiSprite.preFX.clear();
-                    tokenText.preFX.clear();
                 });
 
                 mortiSprite.on('pointerdown', () => {
@@ -159,17 +157,20 @@ class PlayerSelection extends Phaser.Scene {
 
                     // Show a message to the user
                     window.alert(`Selected Morti ID ${mortiId}`);
+
+                    // End the scene
+                    this.scene.stop();
                 });
 
                 thumbContainer.add(mortiSprite);
                 thumbContainer.add(tokenText);
-            }
-            
-            // Update row and column indices
-            colIndex++;
-            if (colIndex >= 5) { // Maximum of 5 Mortis per row
-                colIndex = 0;
-                rowIndex++;
+
+                // Update indices
+                colIndex++;
+                if (colIndex >= 5) { // Maximum of 5 Krakens per row
+                    colIndex = 0;
+                    rowIndex++;
+                };
             };
         }
     }

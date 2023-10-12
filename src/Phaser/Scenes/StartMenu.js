@@ -60,12 +60,12 @@ class StartMenu extends Phaser.Scene {
     // Set's the listener for the PlayerSelection scene
     eventsCenter.on('selected-kraken', () => {
         this.selectedPlayerType = 0;
-        this.selectedKraken = eventsCenter.selectedKraken;
+        this.selectedKraken = eventsCenter.krakenId;
     }, this);
 
     eventsCenter.on('selected-morti', () => {
         this.selectedPlayerType = 1;
-        this.selectedMorti = eventsCenter.selectedMorti;
+        this.selectedMorti = eventsCenter.mortiId;
     }, this);
 
     // Start Game button
@@ -181,7 +181,6 @@ class StartMenu extends Phaser.Scene {
             // If the user has Krakens, show the Kraken selection
             if (this.krakensIds[0].length > 0 && this.mortisIds[0].length < 0) {
                 // Call the Selection Scene with the Kraken IDs
-                // Sets the position of the Kraken selection scene
                 this.scene.run('PlayerSelection', {playerType: 0, userTokensIds: this.krakensIds});
             } 
             else if (this.krakensIds[0].length < 0 && this.mortisIds[0].length > 0) {
@@ -189,11 +188,13 @@ class StartMenu extends Phaser.Scene {
                 this.scene.run('PlayerSelection', {playerType: 1, userTokensIds: this.mortisIds});
             } 
             else if (this.krakensIds[0].length > 0 && this.mortisIds[0].length > 0) {
-                // Creates a black filter
-                this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000);
+                // Creates a black filter that covers the screen
+                const filter = this.add.graphics();
+                filter.fillStyle(0x000000, 0.4);
+                filter.fillRect(0, 0, screenWidth, screenHeight);
 
                 // Create a Kraken and a Morti button
-                const krakenButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'krakenButton');
+                const krakenButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 100, 'krakenButton');
                 krakenButton.setScale(2);
                 this.anims.create({
                     key: 'krakenButton',
@@ -203,10 +204,12 @@ class StartMenu extends Phaser.Scene {
                 });
                 krakenButton.anims.play('krakenButton', true);
                 krakenButton.setInteractive();
+                const krakentext = this.add.text(krakenButton.getCenter, krakenButton.getCenter + 20, 'Play as Kraken', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
                 this.buttonContainer.add(krakenButton);
+                this.buttonContainer.add(krakentext);
 
-                const mortiButton = this.add.sprite(screenWidth / 2, screenHeight / 2 - 100, 'mortiButton');
-                mortiButton.setScale(1.5);
+                const mortiButton = this.add.sprite(screenWidth / 2, screenHeight / 2 + 100, 'mortiButton');
+                mortiButton.setScale(2);
                 this.anims.create({
                     key: 'mortiButton',
                     frames: this.anims.generateFrameNumbers('mortiButton', { start: 0, end: 9 }),
@@ -215,43 +218,49 @@ class StartMenu extends Phaser.Scene {
                 });
                 mortiButton.anims.play('mortiButton', true);
                 mortiButton.setInteractive();
+                const mortitext = this.add.text(mortiButton.getCenter, mortiButton.getCenter + 20, 'Play as Morti', { fontFamily: 'Minecraft', fontSize: 20, color: '#ffffff' });
                 this.buttonContainer.add(mortiButton);
+                this.buttonContainer.add(mortitext);
 
                 // Button interactions
                 krakenButton.on('pointerover', () => {
-                    // Highlight the button when the mouse is over it
-                    krakenButton.setScale(1.1);
+                    krakenButton.preFX.addGlow(0x000000);
+                    krakenButton.setScale(2.2);
                 });
                 krakenButton.on('pointerout', () => {
-                    // Reset the button's scale when the mouse is out
-                    krakenButton.setScale(1);
+                    krakenButton.preFX.clear();
+                    krakenButton.setScale(2);
                 });
                 krakenButton.on('pointerdown', () => {
-                    krakenButton.preFX.addGlow(0x000000);
                     this.scene.run('PlayerSelection', {playerType: 0, userTokensIds: this.krakensIds});
                     // Clear the black filter
-                    this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000).clear();
+                    filter.destroy();
                     // Clear the Kraken and Morti buttons
                     krakenButton.destroy();
                     mortiButton.destroy();
+                    // Clear the Kraken and Morti text
+                    krakentext.destroy();
+                    mortitext.destroy();
                 });
 
                 mortiButton.on('pointerover', () => {
-                    // Highlight the button when the mouse is over it
-                    mortiButton.setScale(1.1);
+                    mortiButton.preFX.addGlow(0x000000);
+                    mortiButton.setScale(2.2);
                 });
                 mortiButton.on('pointerout', () => {
-                    // Reset the button's scale when the mouse is out
-                    mortiButton.setScale(1);
+                    mortiButton.preFX.clear();
+                    mortiButton.setScale(2);
                 });
                 mortiButton.on('pointerdown', () => {
-                    mortiButton.preFX.addGlow(0x000000);
                     this.scene.run('PlayerSelection', {playerType: 1, userTokensIds: this.mortisIds});
                     // Clear the black filter
-                    this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000).clear();
+                    filter.destroy();                    
                     // Clear the Kraken and Morti buttons
                     krakenButton.destroy();
                     mortiButton.destroy();
+                    // Clear the Kraken and Morti text
+                    krakentext.destroy();
+                    mortitext.destroy();
                 });
 
             } else {
@@ -269,10 +278,6 @@ class StartMenu extends Phaser.Scene {
         }
     });
     }
-
-    update() {
-    
-    }    
 }
 
 export default StartMenu;

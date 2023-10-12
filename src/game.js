@@ -12,8 +12,6 @@ import OptionsMenu from './Phaser/Scenes/OptionsMenu';
 import PauseMenu from './Phaser/Scenes/PauseMenu';
 import Interface from './Phaser/Classes/UI/Interface';
 import PlayerSelection from './Phaser/Classes/UI/PlayerSelection';
-import { World } from 'matter';
-
 
 export default class Game extends Phaser.Scene
 {
@@ -24,8 +22,8 @@ export default class Game extends Phaser.Scene
 
      init (data)
     {
-        this.playerType = data.playerType || 0;
-        this.selectedTokenId = data.selectedTokenId || 1518;
+        this.playerType = data.playerType;
+        this.selectedTokenId = data.selectedTokenId;
     }
 
     preload (){
@@ -66,7 +64,7 @@ export default class Game extends Phaser.Scene
         
         //Initialize projectile variables
         this.projectileType = 0; // Default projectile type - can change with in game projectile pickups
-        this.enemiesProjectilesGroup = this.physics.add.group(); // Group for the enemies projectiles
+        this.enemiesProjectilesGroup = this.physics.add.group(); // Group for the enemies projectiles; TODO: add enemies projectiles
         
         //Initialize heart variables
         this.maxHeartsOnScreen = 1; // Initial maximum number of hearts on the screen
