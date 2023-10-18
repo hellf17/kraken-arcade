@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { createPlayer, createAnimations, loadPlayer } from './player';
 import { loadProjectiles, createProjectileAnimation, loadProjectileSound, createProjectileSound, playProjectileAnimation } from './projectile';
 import { loadEnemies, spawnEnemy, trackPlayerAndMove, createEnemiesAnimations } from './enemy';
-import { loadHearts, createHeartAnimation, spawnHearts } from './heart';
+import { spawnHearts } from './heart';
 import { loadDebuffs, createDebuffsAnimation, spawnDebuffs } from './debuffs';
 import { loadBuffs, createBuffsAnimation, spawnBuffs } from './buffs';
 import eventsCenter from './Phaser/Classes/UI/EventsCenter'
@@ -15,18 +15,16 @@ import PlayerSelection from './Phaser/Classes/UI/PlayerSelection';
 
 export default class Game extends Phaser.Scene
 {
-    constructor ()
-    {
+    constructor () {
         super('Game')
     }
 
-     init (data)
-    {
+     init (data) {
         this.playerType = data.playerType;
         this.selectedTokenId = data.selectedTokenId;
     }
 
-    preload (){
+    preload () {
         this.load.audio('backgroundSound', 'src/assets/audio/background.mp3')
         //loadPlayer(this, this.playerType, this.selectedTokenId)
         loadProjectiles(this)
@@ -34,12 +32,18 @@ export default class Game extends Phaser.Scene
         loadEnemies(this)
         loadDebuffs(this)
         loadBuffs(this)
+
+        //Check if the user is using the default token, in this case load the spritesheet
+        if (this.selectedTokenId == 1518) {
+            this.load.spritesheet('player01518', 'src/assets/images/spritesheets/player/kraken/sheet1518.png', { frameWidth: 64, frameHeight: 64 });
+        }
+
+/*         if (this.selectedTokenId == 779) {
+            this.load.spritesheet('player1759', 'src/assets/images/spritesheets/player/morti/sheet759.png', { frameWidth: 64, frameHeight: 64 });
+        } */
     }
 
     create() {
-        //Start the UI scene
-        this.scene.run('Interface')
-
         //Sets custom cursor
         this.input.setDefaultCursor('url(src/assets/images/crosshair/green_crosshair.cur), pointer');
         
@@ -54,6 +58,7 @@ export default class Game extends Phaser.Scene
         const backgroundSound = this.sound.add('backgroundSound', { loop: true });
         backgroundSound.play();
        
+        // Initialize player associated variables
         this.maxUiHearts = 10; // Player max hitpoints with buffs
         this.lastTimeSurvivedUpdate = 0; // Initialize to 0 the last time the player's timeSurvived was updated
 
@@ -83,22 +88,28 @@ export default class Game extends Phaser.Scene
 
         //Create player and animates it
         this.player = createPlayer(this, screenWidth / 2, screenHeight / 2, this.playerType, this.selectedTokenId) // Create player object
-        //createAnimations(this, this.playerType, this.selectedTokenId); 
+        if (this.selectedTokenId == 1518 || this.selectedTokenId == 779) {
+            createAnimations(this, this.playerType, this.selectedTokenId)
+            console.log('created animations')
+        }
         this.player.anims.play(('player' + this.playerType + this.selectedTokenId), true);
         this.player.timeSurvived = 0; // Initialize the player's timeSurvived to 0
- 
+
         //Create player inputs
         this.player.setupKeys(this); // Setup player inputs
 
         //Create animations
         createEnemiesAnimations(this);
         createProjectileAnimation(this);
-        createHeartAnimation(this);
         createDebuffsAnimation(this);
         createBuffsAnimation(this);
 
         //Create sounds
         createProjectileSound(this);
+
+        //Create UI
+        this.scene.run('Interface', {player: this.player})
+        this.scene.sendToBack('Interface')
 
         //Initialize groups for collision detection and other purposes
         this.heartGameGroup = this.physics.add.group(); // Group for the hearts at the game
@@ -113,8 +124,9 @@ export default class Game extends Phaser.Scene
         this.physics.add.collider(this.player, this.heartGameGroup, this.handlePlayerHeartCollision, null, this);
         this.physics.add.collider(this.player, this.buffsGroup, this.handlePlayerBuffCollision, null, this);
         this.physics.add.collider(this.player, this.debuffsGroup, this.handlePlayerDebuffCollision, null, this);
+        //this.physics.add.collider(this.enemiesGroup, this.ultimateGroup, this.handleUltimateEnemyBordersCollision, null, this);
         //this.physics.add.collider(this.enemiesProjectilesGroup, this.player, this.handlePlayerEnemyProjectileCollision, null, this);
-        this.physics.add.collider(this.enemiesGroup, this.ultimateGroup, this.handleUltimateEnemyBordersCollision, null, this);
+
     }
     
     handlePlayerEnemyCollision () {
@@ -180,7 +192,7 @@ export default class Game extends Phaser.Scene
             
                 // Update max hitpoints at UI
                 //drawUiMaxHearts(this);
-                eventsCenter.emit('drawUiMaxHearts')
+                eventsCenter.emit('drawUiMaxHearts', this.player)
             }
 
                 // If player is not at max hitpoints increases hitpoints adds the heart to UI and 
@@ -216,7 +228,7 @@ export default class Game extends Phaser.Scene
                     enemy.hitpoints -= projectile.damage
                     
                     // Destroy the projectile after the animation is finished
-                    delayedCall(500, () => {
+                    this.time.delayedCall(500, () => {
                         projectile.destroy();
                     }, this);
 
@@ -233,7 +245,7 @@ export default class Game extends Phaser.Scene
         }
     }
 
-    handleUltimateEnemyBordersCollision (){
+    /* handleUltimateEnemyBordersCollision (){
         // The ultimate is a sprite, divided in 3 parts, the Eth rock, the body and the explosion
         // The body is the only part that can collide with the enemies and it lasts for 4 seconds
         // It follows the mouse pointer
@@ -267,7 +279,7 @@ export default class Game extends Phaser.Scene
         }
         
         // Check if the ultimate is colliding with the border?
-    }
+    } */
 
 
 /*     handlePlayerDebuffCollision() { //need to properly implement this

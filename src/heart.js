@@ -114,24 +114,24 @@ class Heart extends Phaser.Physics.Arcade.Sprite {
     }
 }
 
-const drawUiMaxHearts = (scene) => {
-    const centerX = scene.cameras.main.width / 2;
+const drawUiMaxHearts = (scene, player) => {
+    const centerX = window.innerWidth / 2;
     const heartSpacing = 32;
 
     //Draw transparent hearts for the player's max hitpoints
-    for (let i = 0; i < scene.player.maxHitpoints; i++) {
+    for (let i = 0; i < player.maxHitpoints; i++) {
         const transparentHeart = scene.add.sprite(centerX + (heartSpacing * i), 30, 'heartTransparent').setScrollFactor(0).setDepth(1).setScale(0.2);
         transparentHeart.setFrame(0); // Set the first frame
         transparentHeart.anims.play('heartTransparent', true);
     }
 };
 
-const drawUiHearts = (scene, type = 'Red') => {
-    const centerX = scene.cameras.main.width / 2;
+const drawUiHearts = (scene, player, type = 'Red') => {
+    const centerX = window.innerWidth / 2;
     const heartSpacing = 32;
 
     //Fill hearts for the player's hitpoints
-    for (let i = 0; i < scene.player.hitpoints; i++) {
+    for (let i = 0; i < player.hitpoints; i++) {
         const heart = scene.add.sprite(centerX + (heartSpacing * i), 30, 'heart' + type).setScrollFactor(0).setDepth(1).setScale(0.19);
         heart.setFrame(0); // Set the first frame
         heart.anims.play('heart' + type, true);

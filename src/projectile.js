@@ -80,7 +80,7 @@ const createProjectileAnimation = (scene) => {
 
         scene.anims.create({
             key: 'projectileHit' + 0,
-            frames: scene.anims.generateFrameNames('projectileHit' + 0, { start: 9, end: 13 }),
+            frames: scene.anims.generateFrameNames('projectile' + 0, { start: 9, end: 13 }),
             frameRate: 5,
             repeat: 0
         });
@@ -128,14 +128,14 @@ let ultimateSound;
 
 const loadProjectileSound = (scene) => {
     scene.load.audio('projectileSound', 'src/assets/audio/projectile.mp3');
-    scene.load.audio('ultimateSound', 'src/assets/audio/ultimate.mp3');
+    //scene.load.audio('ultimateSound', 'src/assets/audio/ultimate.mp3');
 };
 
 const createProjectileSound = (scene) => {
     projectileSound = scene.sound.add('projectileSound');
-    ultimateSound = scene.sound.add('ultimateSound');
+    //ultimateSound = scene.sound.add('ultimateSound');
 
-    return projectileSound, ultimateSound;
+    return projectileSound; //, ultimateSound;
 };
 
 const playProjectileSound = () => {
@@ -143,7 +143,7 @@ const playProjectileSound = () => {
 };
 
 const playUltimateSound = () => {
-    ultimateSound.play();
+    //ultimateSound.play();
 };
 
 class Projectile extends Phaser.Physics.Arcade.Sprite {

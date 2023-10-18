@@ -39,17 +39,24 @@ const createPlayer = (scene, screenX, screenY, type, tokenId) => {
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, type, tokenId) {
         super(scene, x, y, 'player' + type + tokenId);
-        scene.add.existing(this);
         scene.physics.add.existing(this);
         scene.physics.world.enable(this);
-  
+        this.setCollideWorldBounds(true);
+        this.setDepth(1);
+        this.setScale(2);
+        this.setMaxVelocity(300, 300);
+        this.setDrag(1000);
+
+         // Set FX padding
+        this.preFX.setPadding(2)
+
         this.tokenId = tokenId;
         this.isPlayerAttacking = false;
         this.isPlayerAlive = true;
         this.isPlayerHit = false;
         this.isPlayerInvencible = false;
         this.isPlayerUltimateReady = false;
-        this.fireRateType = 1; // 0 is the fire rate for the normal shot, 1 for automatic shot
+        this.fireRateType = 0; // 0 is the fire rate for the normal shot, 1 for automatic shot
         this.damageMultiplier = 1; // 1 is the normal damage, buffs/debuffs can change this value
         this.speedMultiplier = 1; // 1 is the normal speed, buffs/debuffs can change this value
         this.ultimatesUsed = 0; // Number of ultimates used by the player
@@ -58,23 +65,13 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.timeSurvived = 0;
         this.enemyKills = 0;
         
-        // Gets the kraken total deaths from the local storage if it exists, otherwise it will be 0
+/*        // Gets the player total deaths from the local storage if it exists, otherwise it will be 0
         if (localStorage.getItem('deaths') === null) {
             localStorage.setItem('deaths', 0);
         }
         
-        const deaths = getTopStats('deaths', 1);
-        this.deaths = deaths[0].deaths
-        
-        this.setCollideWorldBounds(true);
-        this.setDepth(1);
-        this.body.setSize();
-        this.setScale(2);
-        this.setMaxVelocity(300, 300);
-        this.setDrag(1000);
-
-         // Set FX padding and add shadow to player
-        this.preFX.setPadding(6)
+         const deaths = getTopStats('deaths', 1);
+        this.deaths = deaths[0].deaths */
 
         switch (type) { // Set player stats based on type (can be used for Mortis)
             case playerType.Type1:
@@ -94,7 +91,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.maxShield = 3;
                 break;
         }
-    } 
+    }
 
     setupKeys (scene) {
         this.keys = scene.input.keyboard.addKeys({  

@@ -41,6 +41,7 @@
     "dependencies": {
         "ethers": "^5.7.2",
         "json-reader-writer": "^1.0.4",
+        "phaser3-rex-plugins": "^1.60.6",
         "simplex-noise": "^4.0.1",
         "websocket": "^1.0.34"
     }

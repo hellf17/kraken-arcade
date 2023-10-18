@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+import EventEmitter from 'eventemitter3'
 
 const eventsCenter = new Phaser.Events.EventEmitter()
 
