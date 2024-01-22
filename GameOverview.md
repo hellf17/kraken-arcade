@@ -1,4 +1,4 @@
-**Game Title: Nebular Tentacles: Gorgonax Odyssey**
+**Game Title: Nebular Tentacles - The Gorgonax Odyssey**
 
 **Game Overview:**
 Embark on a cosmic journey with Gorgonax, the Nebula Wraith, in "Nebular Tentacles: Voidclash Odyssey." Navigate through a universe filled with star systems, enigmatic planets, and mysterious black holes, each presenting unique and challenging levels. In this arcade-style shooter, you'll combat an array of cybernetic sea creatures, all while traversing through dynamically generated cosmic realms. Customize your Gorgonax, mint exclusive NFTs, and rise to the top of the leaderboard in this cyberpunk-infused marine adventure. Crafted with PhaserJS, this game blends classic arcade action with modern Web3 integration for a seamless experience.
